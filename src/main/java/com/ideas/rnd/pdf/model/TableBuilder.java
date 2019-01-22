@@ -13,6 +13,11 @@ public class TableBuilder {
 		return this;
 	}
 
+	public TableBuilder setFixedColumns(List<Range> fixedColumns) {
+		table.setFixedColumns(fixedColumns);
+		return this;
+	}
+
 	public TableBuilder setNumberOfRows(Integer numberOfRows) {
 		table.setNumberOfRows(numberOfRows);
 		return this;

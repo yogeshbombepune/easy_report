@@ -21,6 +21,7 @@ public class Table {
 	// Content attributes
 	private Integer numberOfRows;
 	private List<Column> columns;
+	private List<Range> fixedColumns;
 	private String[][] content;
 	private float cellMargin;
 
@@ -149,5 +150,13 @@ public class Table {
 
 	public void setRowWidth(float rowWidth) {
 		this.rowWidth = rowWidth;
+	}
+
+	public List<Range> getFixedColumns() {
+		return fixedColumns;
+	}
+
+	public void setFixedColumns(List<Range> fixedColumns) {
+		this.fixedColumns = fixedColumns;
 	}
 }

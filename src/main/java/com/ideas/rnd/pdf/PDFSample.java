@@ -1,6 +1,7 @@
 package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.model.Column;
+import com.ideas.rnd.pdf.model.Range;
 import com.ideas.rnd.pdf.model.Table;
 import com.ideas.rnd.pdf.model.TableBuilder;
 import org.apache.pdfbox.exceptions.COSVisitorException;
@@ -44,6 +45,12 @@ public class PDFSample {
 		columns.add(new Column("Product", 120));
 		columns.add(new Column("Date", 120));
 		columns.add(new Column("Channel", 43));
+
+		List<Range> fixedColumns = new ArrayList<>();
+		Range range = new Range();
+		range.setFrom(0);
+		range.setTo(1);
+		fixedColumns.add(range);
 
 		String[][] content = {
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
@@ -738,14 +745,15 @@ public class PDFSample {
 
 
 		float tableHeight = IS_LANDSCAPE ? PAGE_SIZE.getWidth() - (2 * MARGIN) : PAGE_SIZE.getHeight() - (2 * MARGIN);
-		double tableWidth = columns.stream().mapToDouble(Column::getWidth).sum();
+		double totalRowWidth = columns.stream().mapToDouble(Column::getWidth).sum();
 
 		Table table = new TableBuilder()
 				.setCellMargin(CELL_MARGIN)
 				.setColumns(columns)
+				.setFixedColumns(fixedColumns)
 				.setContent(content)
 				.setHeight(tableHeight)
-				.setRowWidth((float) tableWidth)
+				.setRowWidth((float) totalRowWidth)
 				.setNumberOfRows(content.length)
 				.setRowHeight(ROW_HEIGHT)
 				.setMargin(MARGIN)
