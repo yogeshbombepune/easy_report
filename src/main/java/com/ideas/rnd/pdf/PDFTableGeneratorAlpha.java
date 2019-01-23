@@ -4,10 +4,9 @@ import com.google.common.collect.ObjectArrays;
 import com.ideas.rnd.pdf.model.Column;
 import com.ideas.rnd.pdf.model.Range;
 import com.ideas.rnd.pdf.model.Table;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,12 +15,12 @@ import java.util.List;
 
 public class PDFTableGeneratorAlpha {
 	// Generates document from Table object
-	public void generatePDF(Table table) throws IOException, COSVisitorException {
+	public void generatePDF(Table table) throws IOException {
 		PDDocument doc = null;
 		try {
 			doc = new PDDocument();
 			drawTable(doc, table);
-			doc.save("sample.pdf");
+			doc.save("results.pdf");
 		} finally {
 			if (doc != null) {
 				doc.close();

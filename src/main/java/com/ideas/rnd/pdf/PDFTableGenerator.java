@@ -1,17 +1,16 @@
 package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.model.Table;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 public class PDFTableGenerator {
 	// Generates document from Table object
-	public void generatePDF(Table table) throws IOException, COSVisitorException {
+	public void generatePDF(Table table) throws IOException {
 		PDDocument doc = null;
 		try {
 			doc = new PDDocument();

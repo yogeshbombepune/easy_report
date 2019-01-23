@@ -4,8 +4,6 @@ import com.ideas.rnd.pdf.model.Column;
 import com.ideas.rnd.pdf.model.Range;
 import com.ideas.rnd.pdf.model.Table;
 import com.ideas.rnd.pdf.model.TableBuilder;
-import org.apache.pdfbox.exceptions.COSVisitorException;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
@@ -16,7 +14,7 @@ import java.util.List;
 
 public class PDFSample {
 	// Page configuration
-	private static final PDRectangle PAGE_SIZE = PDPage.PAGE_SIZE_LETTER;
+	private static final PDRectangle PAGE_SIZE = PDRectangle.LETTER;
 	private static final float MARGIN = 36;
 	private static final boolean IS_LANDSCAPE = true;
 
@@ -28,21 +26,21 @@ public class PDFSample {
 	private static final float ROW_HEIGHT = 15;
 	private static final float CELL_MARGIN = 2;
 
-	public static void main(String[] args) throws IOException, COSVisitorException {
+	public static void main(String[] args) throws IOException {
 		new PDFTableGeneratorAlpha().generatePDF(createContent());
 	}
 
 	private static Table createContent() {
 		// Total size of columns must not be greater than table width.
 		List<Column> columns = new ArrayList<Column>();
-		columns.add(new Column("FirstName", 90));
-		columns.add(new Column("LastName", 90));
-		columns.add(new Column("Email", 230));
+		columns.add(new Column("FirstName", 50));
+		columns.add(new Column("LastName", 50));
+		columns.add(new Column("Email", 150));
 		columns.add(new Column("ZipCode", 43));
 		columns.add(new Column("MailOptIn", 50));
 		columns.add(new Column("Code", 80));
 		columns.add(new Column("Branch", 39));
-		columns.add(new Column("Product", 120));
+		columns.add(new Column("Product", 80));
 		columns.add(new Column("Date", 120));
 		columns.add(new Column("Channel", 43));
 
