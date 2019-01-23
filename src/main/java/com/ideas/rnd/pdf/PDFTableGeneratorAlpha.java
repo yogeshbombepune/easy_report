@@ -197,8 +197,9 @@ public class PDFTableGeneratorAlpha {
 	private void drawCurrentPage(Table table, List<List<String>> currentPageContent, PDPageContentStream contentStream, List<Range> ranges)
 			throws IOException {
 		float nextX = 0;
-		float nextTextX = 0;
+		float nextTextXForNonZeroIndex = 0;
 		for (Range range : ranges) {
+
 			float tableTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getMargin() : table.getPageSize().getHeight() - table.getMargin();
 
 			// Draws grid and borders
@@ -206,11 +207,12 @@ public class PDFTableGeneratorAlpha {
 
 			// Position cursor to start drawing content
 
-			if (range.getFrom() == 0) {
-				nextTextX = table.getMargin() + table.getCellMargin();
-			}else {
 
+			float nextTextX = table.getMargin() + table.getCellMargin();
+			if (range.getFrom() != 0) {
+				nextTextX = nextTextXForNonZeroIndex;
 			}
+
 
 			// Calculate center alignment for text in cell considering font height
 			float nextTextY = tableTopY - (table.getRowHeight() / 2)
@@ -222,16 +224,23 @@ public class PDFTableGeneratorAlpha {
 			nextTextY -= table.getRowHeight();
 			if (range.getFrom() == 0) {
 				nextTextX = table.getMargin() + table.getCellMargin();
+			} else {
+				nextTextX = nextTextXForNonZeroIndex;
 			}
 
 
 			// Write content
 			for (int i = 0; i < currentPageContent.size(); i++) {
 				Object[] objects = currentPageContent.get(i).toArray();
-				writeContentLine((String[]) objects, contentStream, nextTextX, nextTextY, table, range);
+				writeContentLine((String[]) objects, contentStream, nextTextX, nextTextY, table, range, ranges.get(0).getTo());
 				nextTextY -= table.getRowHeight();
-				nextTextX = table.getMargin() + table.getCellMargin();
+				if(range.getFrom()==0){
+					nextTextX = table.getMargin() + table.getCellMargin();
+				}
 			}
+
+			nextTextXForNonZeroIndex = nextTextX + ranges.get(0).getOffSet();
+
 		}
 
 
@@ -240,7 +249,7 @@ public class PDFTableGeneratorAlpha {
 
 	// Writes the content for one line
 	private void writeContentLine(String[] lineContent, PDPageContentStream contentStream, float nextTextX, float nextTextY,
-								  Table table, Range range) throws IOException {
+								  Table table, Range range, int to) throws IOException {
 		int from = range.getFrom();
 		int i;
 		int end = 0;
@@ -248,7 +257,7 @@ public class PDFTableGeneratorAlpha {
 			i = 0;
 			end = range.getTo() + 1;
 		} else {
-			i = from;
+			i = to + 1;
 			end = lineContent.length;
 		}
 
