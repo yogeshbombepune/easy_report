@@ -66,13 +66,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox-app -->
-        <!--<dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox-app</artifactId>
-            <version>1.8.4</version>
-        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
