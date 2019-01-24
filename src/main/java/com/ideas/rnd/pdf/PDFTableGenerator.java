@@ -7,12 +7,15 @@ import com.ideas.rnd.pdf.model.Table;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
 
+import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.URL;
 import java.util.List;
+import java.util.*;
 
 public class PDFTableGenerator {
 	// Generates document from Table object
@@ -21,12 +24,144 @@ public class PDFTableGenerator {
 		try {
 			doc = new PDDocument();
 			drawTable(doc, table);
+			addGraphs(doc, table);
+			addFooter(doc, table);
 			doc.save("results.pdf");
 		} finally {
 			if (doc != null) {
 				doc.close();
 			}
 		}
+	}
+
+	private void addGraphs(PDDocument doc, Table table) throws IOException {
+		float totalHeightForGraph = table.getPageSize().getHeight() - table.getTopMargin() - table.getMargin();
+		float totalWidthForGraph = table.getPageSize().getWidth() - (2 * table.getMargin());
+		float tableTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getTopMargin() : table.getPageSize().getHeight() - table.getTopMargin();
+		PDPage page = generatePage(doc, table);
+		PDPageContentStream contentStream = generateContentStream(doc, page, table);
+		addHeader(contentStream, table);
+		URL resource = getClass().getClassLoader().getResource("images/graph1.jpg");
+		PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), doc);
+		float height = 0;
+		float width = 0;
+		if (pdImage.getHeight() > totalHeightForGraph) {
+			height = totalHeightForGraph;
+		} else {
+			height = pdImage.getHeight();
+		}
+		if (pdImage.getWidth() > totalWidthForGraph) {
+			width = totalWidthForGraph;
+		} else {
+			width = pdImage.getWidth();
+		}
+		tableTopY -= height;
+		contentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), tableTopY, width, height);
+		contentStream.close();
+	}
+
+	private float addHeader(PDPageContentStream contentStream, Table table) throws IOException {
+		float xPos = table.getMargin();
+		float cellWidth = (table.getPageSize().getWidth() - (table.getMargin() * 2)) / 4;
+		float pageTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getMargin() : table.getPageSize().getHeight() - table.getMargin();
+		float totalWidthOfPage = table.getPageSize().getWidth() - (2 * table.getMargin());
+		contentStream.setLineWidth(0.2f);
+		String[] label = {"Moevenpick Amsterdam", "Last Room Value report"};
+		float nextY = pageTopY;
+
+		for (int i = 0; i < 2; i++) {
+			nextY = drawFirstTwoHeaderLines(contentStream, table, label[i], nextY);
+		}
+		Map<String, Object> headerMap = getHeaderMap();
+		Set<Map.Entry<String, Object>> entries = headerMap.entrySet();
+		int flag = 0;
+		for (Map.Entry<String, Object> entry : entries) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+
+			contentStream.beginText();
+			contentStream.newLineAtOffset(xPos, nextY);
+			contentStream.showText(key);
+			contentStream.endText();
+
+			xPos += cellWidth;
+
+			contentStream.beginText();
+			contentStream.newLineAtOffset(xPos, nextY);
+			contentStream.showText(value.toString());
+			contentStream.endText();
+
+			xPos += cellWidth;
+
+			if ((flag % 2) != 0) {
+				nextY -= table.getRowHeight();
+				xPos = table.getMargin();
+			}
+			flag++;
+		}
+		return nextY;
+
+	}
+
+	private Map<String, Object> getHeaderMap() {
+		Map<String, Object> headerMap = new LinkedHashMap<>();
+		headerMap.put("Printed By:", "ideas_adm");
+		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
+		headerMap.put("Start Date:", "Sun 29-Jun-2014");
+		headerMap.put("End Date:", "Tue 29-Jun-2014");
+		headerMap.put("Legend:", "(*) Indicates an active Hotel Forecast Override on this date");
+		return headerMap;
+	}
+
+	private float drawFirstTwoHeaderLines(PDPageContentStream contentStream, Table table, String label, float nextY) throws IOException {
+		contentStream.beginText();
+		contentStream.setFont(PDType1Font.TIMES_ROMAN, 8);
+		int centerX = Math.round((table.getPageSize().getWidth() / 2) - (label.length() / 2));
+		contentStream.newLineAtOffset(centerX, nextY);
+		contentStream.showText(label);
+		contentStream.endText();
+		nextY -= table.getRowHeight();
+		return nextY;
+	}
+
+	private void addFooter(PDDocument doc, Table table) throws IOException {
+		int numberOfPages = doc.getNumberOfPages();
+		for (int pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
+			PDPage page = doc.getPage(pageNumber);
+			PDPageContentStream footerContentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
+			drawHorizontalLine(table, doc, footerContentStream);
+			drawLeftSection(table, doc, footerContentStream);
+			drawRightSection(table, numberOfPages, pageNumber + 1, footerContentStream);
+			footerContentStream.close();
+		}
+	}
+
+	private void drawHorizontalLine(Table table, PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
+		footerContentStream.setStrokingColor(Color.LIGHT_GRAY);
+		footerContentStream.setLineWidth(0.6f);
+		float yCoordinate = table.getPageSize().getLowerLeftY() + table.getMargin();
+		float startX = table.getPageSize().getLowerLeftX() + table.getMargin();
+		float endX = table.getPageSize().getUpperRightX() - table.getMargin();
+		footerContentStream.moveTo(startX, yCoordinate);
+		footerContentStream.lineTo(endX, yCoordinate);
+		footerContentStream.stroke();
+		//Reset
+		footerContentStream.setStrokingColor(Color.BLACK);
+	}
+
+	private void drawLeftSection(Table table, PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
+		//URL resource = getClass().getClassLoader().getResource("images" + System.getProperty("file.separator") + "logo.png");
+		URL resource = getClass().getClassLoader().getResource("images/logo.png");
+		PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), doc);
+		footerContentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), table.getPageSize().getLowerLeftY() + 20, 30, 15);
+	}
+
+	private void drawRightSection(Table table, int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
+		footerContentStream.beginText();
+		footerContentStream.setFont(PDType1Font.TIMES_ROMAN, 8);
+		footerContentStream.newLineAtOffset(table.getPageSize().getUpperRightX() - table.getMargin() - 40, table.getPageSize().getLowerLeftY() + 20);
+		footerContentStream.showText("Page " + pageNumber + " of " + numberOfPages);
+		footerContentStream.endText();
 	}
 
 	// Configures basic setup for the table and draws it page by page
@@ -50,6 +185,7 @@ public class PDFTableGenerator {
 			for (List<Range> range : rangesOfColumnRangePerPage) {
 				PDPage page = generatePage(doc, table);
 				PDPageContentStream contentStream = generateContentStream(doc, page, table);
+				addHeader(contentStream, table);
 				List<List<String>> currentPageContent = getContentForCurrentPage(table, rowsPerPage, pageCount, range);
 				drawCurrentPage(table, currentPageContent, contentStream, range);
 			}
@@ -109,7 +245,7 @@ public class PDFTableGenerator {
 
 	private List<List<Range>> getRangesOfColumnRangePerPageNew(Table table) {
 		List<List<Range>> listList = new ArrayList<>();
-		float totalWidth = table.getPageSize().getWidth();
+		float totalWidth = table.getPageSize().getWidth() - (table.getMargin() * 2);
 		float xPos = totalWidth;
 
 		int count = 0;
@@ -200,7 +336,7 @@ public class PDFTableGenerator {
 		float nextTextXForNonZeroIndex = 0;
 		for (Range range : ranges) {
 
-			float tableTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getMargin() : table.getPageSize().getHeight() - table.getMargin();
+			float tableTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getTopMargin() : table.getPageSize().getHeight() - table.getTopMargin();
 
 			// Draws grid and borders
 			nextX = drawTableGrid(table, currentPageContent, contentStream, tableTopY, range, nextX);

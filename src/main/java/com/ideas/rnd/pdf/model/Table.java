@@ -8,6 +8,7 @@ import java.util.List;
 public class Table {
 	// Table attributes
 	private float margin;
+	private float topMargin;
 	private float height;
 	private PDRectangle pageSize;
 	private boolean isLandscape;
@@ -158,5 +159,13 @@ public class Table {
 
 	public void setFixedColumns(List<Range> fixedColumns) {
 		this.fixedColumns = fixedColumns;
+	}
+
+	public float getTopMargin() {
+		return topMargin;
+	}
+
+	public void setTopMargin(float topMargin) {
+		this.topMargin = topMargin;
 	}
 }

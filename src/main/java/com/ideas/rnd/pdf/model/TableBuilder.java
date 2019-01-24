@@ -13,6 +13,11 @@ public class TableBuilder {
 		return this;
 	}
 
+	public TableBuilder setTopMargin(float topMargin) {
+		table.setTopMargin(topMargin);
+		return this;
+	}
+
 	public TableBuilder setFixedColumns(List<Range> fixedColumns) {
 		table.setFixedColumns(fixedColumns);
 		return this;
@@ -76,4 +81,6 @@ public class TableBuilder {
 	public Table build() {
 		return table;
 	}
+
+
 }
