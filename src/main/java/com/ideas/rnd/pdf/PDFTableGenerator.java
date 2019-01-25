@@ -384,12 +384,15 @@ public class PDFTableGenerator {
 
 			// Write column headers
 			String[] columnsNamesAsArray = table.getColumnsNamesAsArray(table.getColumns().subList(range.getFrom(), range.getTo() + 1));
+			contentStream.setNonStrokingColor(Color.white);
 			writeHeaderContentLine(columnsNamesAsArray, contentStream, nextTextX, nextTextY, table, range);
+			contentStream.setNonStrokingColor(Color.BLACK);
 			nextTextY -= table.getRowHeight();
 			nextTextX = table.getMargin() + table.getCellMargin();
 			if (range.getFrom() != 0 && isFixedColumn) {
 				nextTextX = nextTextXForNonZeroIndex;
 			}
+
 
 			// Write content
 			for (int i = 0; i < currentPageContent.size(); i++) {
@@ -441,7 +444,6 @@ public class PDFTableGenerator {
 	// Writes the content for one line
 	private void writeHeaderContentLine(String[] lineContent, PDPageContentStream contentStream, float nextTextX, float nextTextY,
 										Table table, Range range) throws IOException {
-		contentStream.setNonStrokingColor(Color.white);
 		int from = range.getFrom();
 		for (int i = 0; i < lineContent.length; i++) {
 			contentStream.beginText();
@@ -451,22 +453,25 @@ public class PDFTableGenerator {
 			contentStream.endText();
 			nextTextX += table.getColumns().get(from++).getWidth();
 		}
-		contentStream.setNonStrokingColor(Color.BLACK);
 	}
 
 	private float drawTableGrid(Table table, List<List<String>> currentPageContent, PDPageContentStream contentStream, float tableTopY, Range range, float expNextX, boolean isFixedColumn)
 			throws IOException {
-		contentStream.setStrokingColor(Color.LIGHT_GRAY);
-		contentStream.setLineWidth(0.5f);
+
 		// Draw row lines
 		float nextY = tableTopY;
 		float nextX = table.getMargin();
-
+		if (range.getFrom() != 0 && isFixedColumn) {
+			nextX = expNextX;
+		}
 		for (int column = range.getFrom(); column <= range.getTo(); column++) {
 			float width = table.getColumns().get(column).getWidth();
 			drawCellBackground(contentStream, nextX, nextY - table.getRowHeight(), width, table.getRowHeight(), new Color(2, 43, 87));
 			nextX += width;
 		}
+
+		contentStream.setStrokingColor(Color.LIGHT_GRAY);
+		contentStream.setLineWidth(0.5f);
 		//Reset X
 		nextX = table.getMargin();
 		for (int i = 0; i <= currentPageContent.size() + 1; i++) {
