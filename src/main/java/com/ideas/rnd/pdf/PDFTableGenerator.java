@@ -69,7 +69,7 @@ public class PDFTableGenerator {
 
 		int line = (int) Math.ceil((float) (headerMap.size() - 2) / 2);
 		float heightForHeaderBackground = line * table.getRowHeight();
-		drawCellBackground(contentStream, table.getMargin(), pageTopY - 3 - (table.getRowHeight() * 4), totalWidth, heightForHeaderBackground);
+		drawCellBackground(contentStream, table.getMargin(), pageTopY - 3 - (table.getRowHeight() * 4), totalWidth, heightForHeaderBackground, Color.LIGHT_GRAY);
 
 		contentStream.setLineWidth(0.2f);
 		String[] label = {"Moevenpick Amsterdam", "Last Room Value report"};
@@ -111,9 +111,9 @@ public class PDFTableGenerator {
 	}
 
 
-	private void drawCellBackground(PDPageContentStream contentStream, final float startX, final float startY, final float width, final float height)
+	private void drawCellBackground(PDPageContentStream contentStream, final float startX, final float startY, final float width, final float height, Color color)
 			throws IOException {
-		contentStream.setNonStrokingColor(Color.LIGHT_GRAY);
+		contentStream.setNonStrokingColor(color);
 
 		contentStream.addRect(startX, startY, width, height);
 		contentStream.fill();
@@ -420,8 +420,8 @@ public class PDFTableGenerator {
 		if (from == 0) {
 			i = 0;
 			end = range.getTo() + 1;
-		} else if (from!=0 && !isFixedColumn) {
-            i = 0;
+		} else if (from != 0 && !isFixedColumn) {
+			i = 0;
 			end = lineContent.length;
 		} else {
 			i = to + 1;
@@ -441,6 +441,7 @@ public class PDFTableGenerator {
 	// Writes the content for one line
 	private void writeHeaderContentLine(String[] lineContent, PDPageContentStream contentStream, float nextTextX, float nextTextY,
 										Table table, Range range) throws IOException {
+		contentStream.setNonStrokingColor(Color.white);
 		int from = range.getFrom();
 		for (int i = 0; i < lineContent.length; i++) {
 			contentStream.beginText();
@@ -450,14 +451,24 @@ public class PDFTableGenerator {
 			contentStream.endText();
 			nextTextX += table.getColumns().get(from++).getWidth();
 		}
+		contentStream.setNonStrokingColor(Color.BLACK);
 	}
 
 	private float drawTableGrid(Table table, List<List<String>> currentPageContent, PDPageContentStream contentStream, float tableTopY, Range range, float expNextX, boolean isFixedColumn)
 			throws IOException {
-
+		contentStream.setStrokingColor(Color.LIGHT_GRAY);
 		contentStream.setLineWidth(0.5f);
 		// Draw row lines
 		float nextY = tableTopY;
+		float nextX = table.getMargin();
+
+		for (int column = range.getFrom(); column <= range.getTo(); column++) {
+			float width = table.getColumns().get(column).getWidth();
+			drawCellBackground(contentStream, nextX, nextY - table.getRowHeight(), width, table.getRowHeight(), new Color(2, 43, 87));
+			nextX += width;
+		}
+		//Reset X
+		nextX = table.getMargin();
 		for (int i = 0; i <= currentPageContent.size() + 1; i++) {
 			contentStream.moveTo(table.getMargin(), nextY);
 			contentStream.lineTo(table.getMargin() + range.getOffSet(), nextY);
@@ -468,7 +479,7 @@ public class PDFTableGenerator {
 		// Draw column lines
 		final float tableYLength = table.getRowHeight() + (table.getRowHeight() * currentPageContent.size());
 		final float tableBottomY = tableTopY - tableYLength;
-		float nextX = table.getMargin();
+
 		if (range.getFrom() != 0 && isFixedColumn) {
 			nextX = expNextX;
 		}
@@ -481,6 +492,7 @@ public class PDFTableGenerator {
 		contentStream.moveTo(nextX, tableTopY);
 		contentStream.lineTo(nextX, tableBottomY);
 		contentStream.stroke();
+		contentStream.setStrokingColor(Color.BLACK);
 		return nextX;
 	}
 

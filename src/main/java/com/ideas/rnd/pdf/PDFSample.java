@@ -34,7 +34,7 @@ public class PDFSample {
 	private static Table createContent() {
 		List<Column> columns = getColumns();
 		List<Range> fixedColumns = geFixedColumnRanges();
-		//fixedColumns = null;
+		fixedColumns = null;
 		String[][] content = getContent();
 		float tableHeight = IS_LANDSCAPE ? PAGE_SIZE.getWidth() - MARGIN - TOP_MARGIN : PAGE_SIZE.getHeight() - MARGIN - TOP_MARGIN;
 		double totalRowWidth = columns.stream().mapToDouble(Column::getWidth).sum();
@@ -771,7 +771,7 @@ public class PDFSample {
 		columns.add(new Column("ZipCode", 43));
 		columns.add(new Column("MailOptIn", 50));
 		columns.add(new Column("Code", 80));
-		columns.add(new Column("Branch", 39));
+		columns.add(new Column("Branch", 200));
 		columns.add(new Column("Product", 80));
 		columns.add(new Column("Date", 120));
 		columns.add(new Column("Channel", 43));
