@@ -34,6 +34,7 @@ public class PDFSample {
 	private static Table createContent() {
 		List<Column> columns = getColumns();
 		List<Range> fixedColumns = geFixedColumnRanges();
+		//fixedColumns = null;
 		String[][] content = getContent();
 		float tableHeight = IS_LANDSCAPE ? PAGE_SIZE.getWidth() - MARGIN - TOP_MARGIN : PAGE_SIZE.getHeight() - MARGIN - TOP_MARGIN;
 		double totalRowWidth = columns.stream().mapToDouble(Column::getWidth).sum();
