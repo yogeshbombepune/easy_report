@@ -1,34 +1,61 @@
 package com.ideas.rnd.pdf;
 
-import com.ideas.rnd.pdf.model.Column;
-import com.ideas.rnd.pdf.model.Range;
-import com.ideas.rnd.pdf.model.Table;
-import com.ideas.rnd.pdf.model.TableBuilder;
+import com.ideas.rnd.pdf.model.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PDFSample {
 	// Page configuration
 	private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
 	private static final float MARGIN = 36;
 	private static final boolean IS_LANDSCAPE = false;
-	private static final float TOP_MARGIN = MARGIN + 65;
+	private static final float TOP_MARGIN = MARGIN + 45;
 
 	// Font configuration
-	private static final PDFont TEXT_FONT = PDType1Font.TIMES_ROMAN;
-	private static final float FONT_SIZE = 10;
+	private static final PDFont HEADER_TEXT_FONT = PDType1Font.TIMES_BOLD;
+	private static final float HEADER_FONT_SIZE = 6;
+	private static final Color HEADER_TEXT_COLOR = Color.WHITE;
+	private static final Color HEADER_BACKGROUND_COLOR = new Color(2, 43, 87);
+
+	private static final PDFont CONTENT_TEXT_FONT = PDType1Font.TIMES_ROMAN;
+	private static final float CONTENT_FONT_SIZE = 5;
+	private static final Color CONTENT_TEXT_COLOR = Color.BLACK;
 
 	// Table configuration
-	private static final float ROW_HEIGHT = 15;
-	private static final float CELL_MARGIN = 2;
+	private static final float ROW_HEIGHT = 10;
+	private static final float CELL_PADDING = 2;
+	private static final float COLUMN_HEIGHT = ROW_HEIGHT * 3;
 
 	public static void main(String[] args) throws IOException {
-		new PDFTableGenerator().generatePDF(createContent());
+		Header headerData = getHeader();
+		Table table = createContent();
+		new PDFTableGenerator().generatePDF(headerData, table);
+	}
+
+	private static Header getHeader() {
+		return Header.builder()
+				.propertyName("Moevenpick Amsterdam")
+				.reportName("Last Room Value report")
+				.metaKeyVal(getHeaderMap())
+				.build();
+	}
+
+	private static Map<String, Object> getHeaderMap() {
+		Map<String, Object> headerMap = new LinkedHashMap<>();
+		headerMap.put("Printed By:", "ideas_adm");
+		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
+		headerMap.put("Start Date:", "Sun 29-Jun-2014");
+		headerMap.put("End Date:", "Tue 29-Jun-2014");
+		headerMap.put("Legend:", "(*) Indicates an active Hotel Forecast Override on this date");
+		return headerMap;
 	}
 
 	private static Table createContent() {
@@ -41,23 +68,30 @@ public class PDFSample {
 	}
 
 	private static Table getTable(List<Column> columns, List<Range> fixedColumns, String[][] content, float tableHeight, float totalRowWidth) {
-		Table table = new TableBuilder()
-				.setCellMargin(CELL_MARGIN)
-				.setColumns(columns)
-				.setFixedColumns(fixedColumns)
-				.setContent(content)
-				.setHeight(tableHeight)
-				.setRowWidth(totalRowWidth)
-				.setNumberOfRows(content.length)
-				.setRowHeight(ROW_HEIGHT)
-				.setMargin(MARGIN)
-				.setTopMargin(TOP_MARGIN)
-				.setPageSize(PAGE_SIZE)
-				.setLandscape(IS_LANDSCAPE)
-				.setTextFont(TEXT_FONT)
-				.setFontSize(FONT_SIZE)
+		return Table.builder()
+				.cellPadding(CELL_PADDING)
+				.columns(columns)
+				.columnHeight(COLUMN_HEIGHT)
+				.fixedColumns(fixedColumns)
+				.content(content)
+				.height(tableHeight)
+				.rowWidth(totalRowWidth)
+				.numberOfRows(content.length)
+				.rowHeight(ROW_HEIGHT)
+				.margin(MARGIN)
+				.topMargin(TOP_MARGIN)
+				.pageSize(PAGE_SIZE)
+				.isLandscape(IS_LANDSCAPE)
+				.lineColor(Color.LIGHT_GRAY)
+				.lineWidth(0.5f)
+				.headerTextFont(HEADER_TEXT_FONT)
+				.headerFontSize(HEADER_FONT_SIZE)
+				.headerBackgroundColor(HEADER_BACKGROUND_COLOR)
+				.headerTextColor(HEADER_TEXT_COLOR)
+				.contentTextFont(CONTENT_TEXT_FONT)
+				.contentFontSize(CONTENT_FONT_SIZE)
+				.contentTextColor(CONTENT_TEXT_COLOR)
 				.build();
-		return table;
 	}
 
 	private static String[][] getContent() {
@@ -115,24 +149,38 @@ public class PDFSample {
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
-				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"}, {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
+				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
 				{"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"},
@@ -763,17 +811,17 @@ public class PDFSample {
 	}
 
 	private static List<Column> getColumns() {
-		List<Column> columns = new ArrayList<Column>();
-		columns.add(new Column("FirstName", 50));
-		columns.add(new Column("LastName", 50));
-		columns.add(new Column("Email", 150));
-		columns.add(new Column("ZipCode", 43));
-		columns.add(new Column("MailOptIn", 50));
-		columns.add(new Column("Code", 80));
-		columns.add(new Column("Branch", 50));
-		columns.add(new Column("Product", 80));
-		columns.add(new Column("Date", 120));
-		columns.add(new Column("Channel", 43));
+		List<Column> columns = new ArrayList<>();
+		columns.add(Column.builder().name("FirstName FirstName FirstName").width(50).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("LastName").width(50).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Email").width(150).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("ZipCode").width(43).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("MailOptIn").width(50).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Code").width(80).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Branch").width(50).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Product").width(80).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Date").width(120).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Channel").width(43).alignment(Alignment.CENTER).build());
 		return columns;
 	}
 }

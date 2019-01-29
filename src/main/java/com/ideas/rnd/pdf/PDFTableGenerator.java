@@ -1,12 +1,12 @@
 package com.ideas.rnd.pdf;
 
 import com.google.common.collect.ObjectArrays;
-import com.ideas.rnd.pdf.model.Column;
-import com.ideas.rnd.pdf.model.Range;
-import com.ideas.rnd.pdf.model.Table;
+import com.ideas.rnd.pdf.model.*;
+import org.apache.commons.text.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
@@ -17,50 +17,50 @@ import java.net.URL;
 import java.util.List;
 import java.util.*;
 
-public class PDFTableGenerator {
+class PDFTableGenerator {
+	private Table table;
+	private Header header;
+
 	// Generates document from Table object
-	public void generatePDF(Table table) throws IOException {
-		PDDocument doc = null;
-		try {
-			doc = new PDDocument();
-			drawTable(doc, table);
-			addGraphs(doc, table);
-			addFooter(doc, table);
+	void generatePDF(Header header, Table table) throws IOException {
+		try (PDDocument doc = new PDDocument()) {
+			this.header = header;
+			this.table = table;
+			drawTable(doc);
+			addGraphs(doc);
+			addFooter(doc);
 			doc.save("results.pdf");
-		} finally {
-			if (doc != null) {
-				doc.close();
-			}
 		}
 	}
 
-	private void addGraphs(PDDocument doc, Table table) throws IOException {
+	private void addGraphs(PDDocument doc) throws IOException {
 		float totalHeightForGraph = table.getPageSize().getHeight() - table.getTopMargin() - table.getMargin();
 		float totalWidthForGraph = table.getPageSize().getWidth() - (2 * table.getMargin());
 		float tableTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getTopMargin() : table.getPageSize().getHeight() - table.getTopMargin();
-		PDPage page = generatePage(doc, table);
-		PDPageContentStream contentStream = generateContentStream(doc, page, table);
-		addHeader(contentStream, table);
+		PDPage page = generatePage(doc);
+		PDPageContentStream contentStream = generateContentStream(doc, page);
+		addHeader(contentStream);
 		URL resource = getClass().getClassLoader().getResource("images/graph1.jpg");
+		assert resource != null;
 		PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), doc);
-		float height = 0;
-		float width = 0;
-		if (pdImage.getHeight() > totalHeightForGraph) {
-			height = totalHeightForGraph;
-		} else {
-			height = pdImage.getHeight();
-		}
-		if (pdImage.getWidth() > totalWidthForGraph) {
-			width = totalWidthForGraph;
-		} else {
-			width = pdImage.getWidth();
-		}
+		float height = getGraphAdjustmentScale(totalHeightForGraph, pdImage.getHeight());
+		float width = getGraphAdjustmentScale(totalWidthForGraph, pdImage.getWidth());
 		tableTopY -= height;
 		contentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), tableTopY, width, height);
 		contentStream.close();
 	}
 
-	private float addHeader(PDPageContentStream contentStream, Table table) throws IOException {
+	private float getGraphAdjustmentScale(float total, int offset) {
+		float width;
+		if (offset > total) {
+			width = total;
+		} else {
+			width = offset;
+		}
+		return width;
+	}
+
+	private float addHeader(PDPageContentStream contentStream) throws IOException {
 		float xPos = table.getMargin();
 		float totalWidth = table.getPageSize().getWidth() - (table.getMargin() * 2);
 		float cellWidth = totalWidth / 4;
@@ -76,7 +76,9 @@ public class PDFTableGenerator {
 		float nextY = pageTopY;
 
 		for (int i = 0; i < 2; i++) {
-			nextY = drawFirstTwoHeaderLines(contentStream, table, label[i], nextY);
+			/*int textWidth = getTextWidth(table.getContentTextFont(), text, table.getContentFontSize());
+			float adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(),textWidth);*/
+			nextY = drawFirstTwoHeaderLines(contentStream, label[i], nextY);
 		}
 
 		Set<Map.Entry<String, Object>> entries = headerMap.entrySet();
@@ -85,17 +87,11 @@ public class PDFTableGenerator {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
-			contentStream.beginText();
-			contentStream.newLineAtOffset(xPos, nextY);
-			contentStream.showText(key);
-			contentStream.endText();
+			writeText(contentStream, table.getContentTextColor(), table.getContentTextFont(), table.getContentFontSize(), nextY, xPos, key);
 
 			xPos += cellWidth;
 
-			contentStream.beginText();
-			contentStream.newLineAtOffset(xPos, nextY);
-			contentStream.showText(value.toString());
-			contentStream.endText();
+			writeText(contentStream, table.getContentTextColor(), table.getContentTextFont(), table.getContentFontSize(), nextY, xPos, value.toString());
 
 			xPos += cellWidth;
 
@@ -111,18 +107,6 @@ public class PDFTableGenerator {
 	}
 
 
-	private void drawCellBackground(PDPageContentStream contentStream, final float startX, final float startY, final float width, final float height, Color color)
-			throws IOException {
-		contentStream.setNonStrokingColor(color);
-
-		contentStream.addRect(startX, startY, width, height);
-		contentStream.fill();
-		contentStream.closePath();
-
-		// Reset NonStrokingColor to default value
-		contentStream.setNonStrokingColor(Color.BLACK);
-	}
-
 	private Map<String, Object> getHeaderMap() {
 		Map<String, Object> headerMap = new LinkedHashMap<>();
 		headerMap.put("Printed By:", "ideas_adm");
@@ -133,10 +117,10 @@ public class PDFTableGenerator {
 		return headerMap;
 	}
 
-	private float drawFirstTwoHeaderLines(PDPageContentStream contentStream, Table table, String label, float nextY) throws IOException {
+	private float drawFirstTwoHeaderLines(PDPageContentStream contentStream, String label, float nextY) throws IOException {
 		contentStream.beginText();
 		contentStream.setFont(PDType1Font.TIMES_ROMAN, 8);
-		int centerX = Math.round((table.getPageSize().getWidth() / 2) - (label.length() / 2));
+		int centerX = (int) table.getPageSize().getWidth() / 2 - label.length() / 2;
 		contentStream.newLineAtOffset(centerX, nextY);
 		contentStream.showText(label);
 		contentStream.endText();
@@ -144,19 +128,19 @@ public class PDFTableGenerator {
 		return nextY;
 	}
 
-	private void addFooter(PDDocument doc, Table table) throws IOException {
+	private void addFooter(PDDocument doc) throws IOException {
 		int numberOfPages = doc.getNumberOfPages();
 		for (int pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
 			PDPage page = doc.getPage(pageNumber);
 			PDPageContentStream footerContentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
-			drawHorizontalLine(table, doc, footerContentStream);
-			drawLeftSection(table, doc, footerContentStream);
-			drawRightSection(table, numberOfPages, pageNumber + 1, footerContentStream);
+			drawHorizontalLine(doc, footerContentStream);
+			drawLeftSection(doc, footerContentStream);
+			drawRightSection(numberOfPages, pageNumber + 1, footerContentStream);
 			footerContentStream.close();
 		}
 	}
 
-	private void drawHorizontalLine(Table table, PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
+	private void drawHorizontalLine(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
 		footerContentStream.setStrokingColor(Color.LIGHT_GRAY);
 		footerContentStream.setLineWidth(0.6f);
 		float yCoordinate = table.getPageSize().getLowerLeftY() + table.getMargin();
@@ -169,14 +153,15 @@ public class PDFTableGenerator {
 		footerContentStream.setStrokingColor(Color.BLACK);
 	}
 
-	private void drawLeftSection(Table table, PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
+	private void drawLeftSection(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
 		//URL resource = getClass().getClassLoader().getResource("images" + System.getProperty("file.separator") + "logo.png");
 		URL resource = getClass().getClassLoader().getResource("images/logo.png");
+		assert resource != null;
 		PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), doc);
 		footerContentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), table.getPageSize().getLowerLeftY() + 20, 30, 15);
 	}
 
-	private void drawRightSection(Table table, int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
+	private void drawRightSection(int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
 		footerContentStream.beginText();
 		footerContentStream.setFont(PDType1Font.TIMES_ROMAN, 8);
 		footerContentStream.newLineAtOffset(table.getPageSize().getUpperRightX() - table.getMargin() - 40, table.getPageSize().getLowerLeftY() + 20);
@@ -185,94 +170,57 @@ public class PDFTableGenerator {
 	}
 
 	// Configures basic setup for the table and draws it page by page
-	public void drawTable(PDDocument doc, Table table) throws IOException {
+	private void drawTable(PDDocument doc) throws IOException {
 		// Calculate pagination
-		Integer rowsPerPage = null;
-		Integer numberOfPages = null;
+		Integer rowsPerPage;
+		int numberOfPages;
 		float pageWidth = table.getPageSize().getWidth();
 		float totalRowWidth = table.getRowWidth();
-		rowsPerPage = getRowsPerPage(table);
+		rowsPerPage = getRowsPerPage();
 		List<List<Range>> rangesOfColumnRangePerPage;
 		numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
 		List<Range> fixedColumns = table.getFixedColumns();
 		boolean isFixedColumn = fixedColumns != null && fixedColumns.size() > 0;
 		if (pageWidth < totalRowWidth) {
-			rangesOfColumnRangePerPage = getRangesOfColumnRangePerPageNew(table, isFixedColumn);
+			rangesOfColumnRangePerPage = getRangesOfColumnRangePerPageNew(isFixedColumn);
 		} else {
-			rangesOfColumnRangePerPage = getSinglePageRange(table);
+			rangesOfColumnRangePerPage = getSinglePageRange();
 		}
 
 		// Generate each page, get the content and draw it
 		for (int pageCount = 0; pageCount < numberOfPages; pageCount++) {
 			for (List<Range> range : rangesOfColumnRangePerPage) {
-				PDPage page = generatePage(doc, table);
-				PDPageContentStream contentStream = generateContentStream(doc, page, table);
-				addHeader(contentStream, table);
-				List<List<String>> currentPageContent = getContentForCurrentPage(table, rowsPerPage, pageCount, range);
-				drawCurrentPage(table, currentPageContent, contentStream, range, isFixedColumn);
+				PDPage page = generatePage(doc);
+				PDPageContentStream contentStream = generateContentStream(doc, page);
+				addHeader(contentStream);
+				List<List<String>> currentPageContent = getContentForCurrentPage(rowsPerPage, pageCount, range);
+				drawCurrentPage(currentPageContent, contentStream, range, isFixedColumn);
 			}
 		}
 	}
 
-	private List<List<Range>> getSinglePageRange(Table table) {
+	private List<List<Range>> getSinglePageRange() {
 		List<List<Range>> lists = new ArrayList<>();
-
 		List<Range> ranges = new ArrayList<>();
 		float totalWidth = 0;
 		Integer numberOfColumns = table.getNumberOfColumns();
 		for (int i = 0; i < numberOfColumns; i++) {
 			totalWidth += table.getColumns().get(i).getWidth();
 		}
-
-		Range range = new Range();
-		range.setFrom(0);
-		range.setTo(numberOfColumns - 1);
-		range.setOffSet(totalWidth);
+		Range range = getRange(numberOfColumns, totalWidth, 0);
 		ranges.add(range);
 		lists.add(ranges);
 		return lists;
 	}
 
-	private List<Range> getRangesOfColumnRangePerPage(Table table) {
-		float totalWidth = table.getPageSize().getWidth();
-		float xPos = totalWidth;
-		List<Range> ranges = new ArrayList<>();
-		int count = 0;
-		float columnWidth = 0;
-		float lastOffset = 0;
-		for (int i = 0; i < table.getNumberOfColumns(); i++) {
-			float width = table.getColumns().get(i).getWidth();
-			xPos -= width;
-			columnWidth += width;
-			int start = i - count;
-			if (xPos < 0) {
-				count = 0;
-				int end = --i;
-				Range range = new Range();
-				range.setFrom(start);
-				range.setTo(end);
-				lastOffset = columnWidth - width;
-				range.setOffSet(lastOffset);
-				ranges.add(range);
-				xPos = totalWidth;
-				columnWidth = 0;
-			} else {
-				count++;
-			}
-		}
-		getLastOffset(ranges, table.getNumberOfColumns(), columnWidth);
-		return ranges;
-
-	}
-
-	private List<List<Range>> getRangesOfColumnRangePerPageNew(Table table, boolean isFixedColumn) {
+	private List<List<Range>> getRangesOfColumnRangePerPageNew(boolean isFixedColumn) {
 		List<List<Range>> listList = new ArrayList<>();
 		float totalWidth = table.getPageSize().getWidth() - (table.getMargin() * 2);
 		float xPos = totalWidth;
 
 		int count = 0;
 		float columnWidth = 0;
-		float lastOffset = 0;
+		float lastOffset;
 		float fixedColumnWidth = 0;
 		List<Range> fixedColumns = table.getFixedColumns();
 		if (isFixedColumn) {
@@ -288,8 +236,7 @@ public class PDFTableGenerator {
 			if (start != 0 && count == 0 && isFixedColumn) {
 				xPos -= width + fixedColumnWidth;
 				columnWidth += width + fixedColumnWidth;
-				ranges = new ArrayList<>();
-				ranges.addAll(fixedColumns);
+				ranges = new ArrayList<>(fixedColumns);
 			} else {
 				xPos -= width;
 				columnWidth += width;
@@ -326,12 +273,17 @@ public class PDFTableGenerator {
 			ranges.addAll(fixedColumns);
 		}
 
-		Range range = new Range();
-		range.setFrom(to + 1);
-		range.setTo(numberOfColumns - 1);
-		range.setOffSet(lastOffset);
+		Range range = getRange(numberOfColumns, lastOffset, to + 1);
 		ranges.add(range);
 		listList.add(ranges);
+	}
+
+	private Range getRange(Integer numberOfColumns, float lastOffset, int i) {
+		Range range = new Range();
+		range.setFrom(i);
+		range.setTo(numberOfColumns - 1);
+		range.setOffSet(lastOffset);
+		return range;
 	}
 
 	private float getOffset(List<Column> columns, int from, int to) {
@@ -342,75 +294,50 @@ public class PDFTableGenerator {
 		return fixedColumnWidth;
 	}
 
-	private void getLastOffset(List<Range> ranges, Integer numberOfColumns, float lastOffset) {
-		int to = ranges.get(ranges.size() - 1).getTo();
-		Range range = new Range();
-		range.setFrom(to + 1);
-		range.setTo(numberOfColumns - 1);
-		range.setOffSet(lastOffset);
-		ranges.add(range);
-	}
-
-	private Integer getRowsPerPage(Table table) {
-		Integer rowsPerPage;
-		rowsPerPage = new Double(Math.floor(table.getHeight() / table.getRowHeight())).intValue() - 1; // subtract
-		return rowsPerPage;
+	private Integer getRowsPerPage() {
+		return new Double(Math.floor((table.getHeight() - table.getColumnHeight()) / table.getRowHeight())).intValue();
 	}
 
 	// Draws current page table grid and border lines and content
-	private void drawCurrentPage(Table table, List<List<String>> currentPageContent, PDPageContentStream contentStream, List<Range> ranges, boolean isFixedColumn)
+	private void drawCurrentPage(List<List<String>> currentPageContent, PDPageContentStream contentStream, List<Range> ranges, boolean isFixedColumn)
 			throws IOException {
 		float nextX = 0;
 		float nextTextXForNonZeroIndex = 0;
 		for (Range range : ranges) {
-
 			float tableTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getTopMargin() : table.getPageSize().getHeight() - table.getTopMargin();
 
 			// Draws grid and borders
 			nextX = drawTableGrid(table, currentPageContent, contentStream, tableTopY, range, nextX, isFixedColumn);
 
 			// Position cursor to start drawing content
-
-
-			float nextTextX = table.getMargin() + table.getCellMargin();
-			if (range.getFrom() != 0 && isFixedColumn) {
-				nextTextX = nextTextXForNonZeroIndex;
-			}
-
+			float nextTextX = table.getMargin() + table.getCellPadding();
+			nextTextX = getNextX(range, nextTextXForNonZeroIndex, isFixedColumn, nextTextX);
 
 			// Calculate center alignment for text in cell considering font height
 			float nextTextY = tableTopY - (table.getRowHeight() / 2)
-					- ((table.getTextFont().getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * table.getFontSize()) / 4);
+					- ((table.getContentTextFont().getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * table.getContentFontSize()) / 4);
 
 			// Write column headers
 			String[] columnsNamesAsArray = table.getColumnsNamesAsArray(table.getColumns().subList(range.getFrom(), range.getTo() + 1));
 			contentStream.setNonStrokingColor(Color.white);
-			writeHeaderContentLine(columnsNamesAsArray, contentStream, nextTextX, nextTextY, table, range);
+			writeHeaderContentLine(columnsNamesAsArray, contentStream, nextTextX, nextTextY, range);
 			contentStream.setNonStrokingColor(Color.BLACK);
-			nextTextY -= table.getRowHeight();
-			nextTextX = table.getMargin() + table.getCellMargin();
-			if (range.getFrom() != 0 && isFixedColumn) {
-				nextTextX = nextTextXForNonZeroIndex;
-			}
-
+			nextTextY -= table.getColumnHeight();
+			nextTextX = table.getMargin() + table.getCellPadding();
+			nextTextX = getNextX(range, nextTextXForNonZeroIndex, isFixedColumn, nextTextX);
 
 			// Write content
-			for (int i = 0; i < currentPageContent.size(); i++) {
-				Object[] objects = currentPageContent.get(i).toArray();
+			for (List<String> strings : currentPageContent) {
+				Object[] objects = strings.toArray();
 				writeContentLine((String[]) objects, contentStream, nextTextX, nextTextY, table, range, ranges.get(0).getTo(), isFixedColumn);
 				nextTextY -= table.getRowHeight();
 				if (range.getFrom() == 0) {
-					nextTextX = table.getMargin() + table.getCellMargin();
+					nextTextX = table.getMargin() + table.getCellPadding();
 				}
 			}
 
-
 			nextTextXForNonZeroIndex = nextTextX + ranges.get(0).getOffSet();
-
-
 		}
-
-
 		contentStream.close();
 	}
 
@@ -419,89 +346,104 @@ public class PDFTableGenerator {
 								  Table table, Range range, int to, boolean isFixedColumn) throws IOException {
 		int from = range.getFrom();
 		int i;
-		int end = 0;
-		if (from == 0) {
+		int end;
+		boolean startWithZeroIndex = from == 0;
+		// start loop and end loop assignment.
+		if (startWithZeroIndex) {
 			i = 0;
 			end = range.getTo() + 1;
-		} else if (from != 0 && !isFixedColumn) {
-			i = 0;
-			end = lineContent.length;
 		} else {
-			i = to + 1;
-			end = lineContent.length;
+			if (!isFixedColumn) {
+				i = 0;
+				end = lineContent.length;
+			} else {
+				i = to + 1;
+				end = lineContent.length;
+			}
 		}
 
 		for (; i < end; i++) {
 			String text = lineContent[i];
-			contentStream.beginText();
-			contentStream.newLineAtOffset(nextTextX, nextTextY);
-			contentStream.showText(text != null ? text : "");
-			contentStream.endText();
+			int textWidth = getTextWidth(table.getContentTextFont(), text, table.getContentFontSize());
+			float adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
+			writeText(contentStream, table.getContentTextColor(), table.getContentTextFont(), table.getContentFontSize(), nextTextY, nextTextX + adjustX, text != null ? text : "");
 			nextTextX += table.getColumns().get(from++).getWidth();
 		}
 	}
+
 
 	// Writes the content for one line
 	private void writeHeaderContentLine(String[] lineContent, PDPageContentStream contentStream, float nextTextX, float nextTextY,
-										Table table, Range range) throws IOException {
+										Range range) throws IOException {
 		int from = range.getFrom();
-		for (int i = 0; i < lineContent.length; i++) {
-			contentStream.beginText();
-			contentStream.newLineAtOffset(nextTextX, nextTextY);
-			String text = lineContent[i];
-			contentStream.showText(text != null ? text : "");
-			contentStream.endText();
+		for (String text : lineContent) {
+			int textWidth = getTextWidth(table.getHeaderTextFont(), text, table.getHeaderFontSize());
+			float adjustX;
+			if (textWidth > table.getColumns().get(from).getWidth()) {
+				int characterPerLine = (int) ((table.getColumns().get(from).getWidth() - 4) * text.length()) / textWidth;
+				String[] columnName = WordUtils.wrap(text, characterPerLine).split("\\r?\\n");
+				for (int j = 0; j < columnName.length; j++) {
+					textWidth = getTextWidth(table.getHeaderTextFont(), columnName[j] != null ? columnName[j] : "", table.getHeaderFontSize());
+					adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
+					writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY - j * table.getRowHeight(), nextTextX + adjustX, columnName[j] != null ? columnName[j] : "");
+				}
+			} else {
+				adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
+				writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY, nextTextX + adjustX, text != null ? text : "");
+			}
 			nextTextX += table.getColumns().get(from++).getWidth();
 		}
 	}
 
+
 	private float drawTableGrid(Table table, List<List<String>> currentPageContent, PDPageContentStream contentStream, float tableTopY, Range range, float expNextX, boolean isFixedColumn)
 			throws IOException {
-
-		// Draw row lines
 		float nextY = tableTopY;
 		float nextX = table.getMargin();
-		if (range.getFrom() != 0 && isFixedColumn) {
-			nextX = expNextX;
-		}
+		nextX = getNextX(range, expNextX, isFixedColumn, nextX);
 		for (int column = range.getFrom(); column <= range.getTo(); column++) {
 			float width = table.getColumns().get(column).getWidth();
-			drawCellBackground(contentStream, nextX, nextY - table.getRowHeight(), width, table.getRowHeight(), new Color(2, 43, 87));
+			drawCellBackground(contentStream, nextX, nextY - table.getColumnHeight(), width, table.getColumnHeight(), table.getHeaderBackgroundColor());
 			nextX += width;
 		}
 
-		contentStream.setStrokingColor(Color.LIGHT_GRAY);
-		contentStream.setLineWidth(0.5f);
 		//Reset X
 		nextX = table.getMargin();
-		for (int i = 0; i <= currentPageContent.size() + 1; i++) {
-			contentStream.moveTo(table.getMargin(), nextY);
-			contentStream.lineTo(table.getMargin() + range.getOffSet(), nextY);
-			contentStream.stroke();
+
+		//manage table header height
+		for (int i = 0; i < 1; i++) {
+			drawLine(contentStream, table.getLineColor(), table.getLineWidth(), table.getMargin(), table.getMargin() + range.getOffSet(), nextY, nextY);
+			nextY -= table.getColumnHeight();
+		}
+
+		// Draw row lines
+		for (int i = 0; i <= currentPageContent.size(); i++) {
+			drawLine(contentStream, table.getLineColor(), table.getLineWidth(), table.getMargin(), table.getMargin() + range.getOffSet(), nextY, nextY);
 			nextY -= table.getRowHeight();
 		}
 
 		// Draw column lines
-		final float tableYLength = table.getRowHeight() + (table.getRowHeight() * currentPageContent.size());
+		final float tableYLength = table.getColumnHeight() + (table.getRowHeight() * currentPageContent.size());
 		final float tableBottomY = tableTopY - tableYLength;
 
-		if (range.getFrom() != 0 && isFixedColumn) {
-			nextX = expNextX;
-		}
+		nextX = getNextX(range, expNextX, isFixedColumn, nextX);
 		for (int i = range.getFrom(); i < range.getTo() + 1; i++) {
-			contentStream.moveTo(nextX, tableTopY);
-			contentStream.lineTo(nextX, tableBottomY);
-			contentStream.stroke();
+			drawLine(contentStream, table.getLineColor(), table.getLineWidth(), nextX, nextX, tableTopY, tableBottomY);
 			nextX += table.getColumns().get(i).getWidth();
 		}
-		contentStream.moveTo(nextX, tableTopY);
-		contentStream.lineTo(nextX, tableBottomY);
-		contentStream.stroke();
-		contentStream.setStrokingColor(Color.BLACK);
+		drawLine(contentStream, table.getLineColor(), table.getLineWidth(), nextX, nextX, tableTopY, tableBottomY);
 		return nextX;
 	}
 
-	private List<List<String>> getContentForCurrentPage(Table table, Integer rowsPerPage, int pageCount, List<Range> ranges) {
+	private float getNextX(Range range, float expNextX, boolean isFixedColumn, float nextX) {
+		if (range.getFrom() != 0 && isFixedColumn) {
+			nextX = expNextX;
+		}
+		return nextX;
+	}
+
+
+	private List<List<String>> getContentForCurrentPage(Integer rowsPerPage, int pageCount, List<Range> ranges) {
 		List<List<String>> newContentList = new ArrayList<>();
 
 		int startRange = pageCount * rowsPerPage;
@@ -522,7 +464,7 @@ public class PDFTableGenerator {
 		return newContentList;
 	}
 
-	private PDPage generatePage(PDDocument doc, Table table) {
+	private PDPage generatePage(PDDocument doc) {
 		PDPage page = new PDPage();
 		page.setMediaBox(table.getPageSize());
 		page.setRotation(table.isLandscape() ? 90 : 0);
@@ -530,13 +472,77 @@ public class PDFTableGenerator {
 		return page;
 	}
 
-	private PDPageContentStream generateContentStream(PDDocument doc, PDPage page, Table table) throws IOException {
+	private PDPageContentStream generateContentStream(PDDocument doc, PDPage page) throws IOException {
 		PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
 		if (table.isLandscape()) {
 			Matrix matrix = new Matrix(0, 1, -1, 0, table.getPageSize().getWidth(), 0);
 			contentStream.transform(matrix);
 		}
-		contentStream.setFont(table.getTextFont(), table.getFontSize());
+		//contentStream.setFont(table.getContentTextFont(), table.getContentFontSize());
 		return contentStream;
 	}
+
+
+	private void drawLine(PDPageContentStream contentStream, Color lineColor, float lineWidth, float startX, float endX, float startY, float endY) throws IOException {
+		contentStream.setStrokingColor(lineColor);
+		contentStream.setLineWidth(lineWidth);
+		contentStream.moveTo(startX, startY);
+		contentStream.lineTo(endX, endY);
+		contentStream.stroke();
+		// Reset NonStrokingColor to default value
+		contentStream.setStrokingColor(Color.BLACK);
+	}
+
+	private void drawCellBackground(PDPageContentStream contentStream, final float startX, final float startY, final float width, final float height, Color color)
+			throws IOException {
+		contentStream.setNonStrokingColor(color);
+		contentStream.addRect(startX, startY, width, height);
+		contentStream.fill();
+		contentStream.closePath();
+		// Reset NonStrokingColor to default value
+		contentStream.setNonStrokingColor(Color.BLACK);
+	}
+
+	private void writeText(PDPageContentStream contentStream, Color textColor, PDFont textFont, float fontSize, float y, float x, String text) throws IOException {
+		contentStream.beginText();
+		contentStream.setNonStrokingColor(textColor);
+		contentStream.setFont(textFont, fontSize);
+		contentStream.newLineAtOffset(x, y);
+		contentStream.showText(text);
+		contentStream.endText();
+	}
+
+	private float getAdjustX(Alignment textAlignment, float cellWidth, float cellMargin, int textWidth) {
+		Alignment alignment = textAlignment == null ?
+				Alignment.LEFT : textAlignment;
+		float adjustment = 0;
+		switch (alignment) {
+			case LEFT: {
+				adjustment = cellMargin;
+			}
+			break;
+			case CENTER: {
+				adjustment = getCenterX(cellWidth, cellMargin, textWidth);
+			}
+			break;
+			case RIGHT: {
+				adjustment = getRightX(cellWidth, cellMargin, textWidth);
+			}
+			break;
+		}
+		return adjustment;
+	}
+
+	private float getCenterX(float cellWidth, float cellMargin, int textWidth) {
+		return (cellWidth - cellMargin - textWidth) / 2;
+	}
+
+	private float getRightX(float cellWidth, float cellMargin, int textWidth) {
+		return (cellWidth - (textWidth + cellMargin * 2));
+	}
+
+	private int getTextWidth(PDFont textFont, String text, float fontSize) throws IOException {
+		return (int) ((textFont.getStringWidth(text) / 1000) * fontSize);
+	}
+
 }
