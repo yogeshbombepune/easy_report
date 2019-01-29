@@ -20,12 +20,12 @@ public class PDFSample {
 	private static final float TOP_MARGIN = MARGIN + 45;
 
 	// Font configuration
-	private static final PDFont HEADER_TEXT_FONT = PDType1Font.TIMES_BOLD;
+	private static final PDFont HEADER_TEXT_FONT = PDType1Font.HELVETICA_BOLD_OBLIQUE;
 	private static final float HEADER_FONT_SIZE = 6;
 	private static final Color HEADER_TEXT_COLOR = Color.WHITE;
 	private static final Color HEADER_BACKGROUND_COLOR = new Color(2, 43, 87);
 
-	private static final PDFont CONTENT_TEXT_FONT = PDType1Font.TIMES_ROMAN;
+	private static final PDFont CONTENT_TEXT_FONT = PDType1Font.HELVETICA;
 	private static final float CONTENT_FONT_SIZE = 5;
 	private static final Color CONTENT_TEXT_COLOR = Color.BLACK;
 
@@ -43,8 +43,17 @@ public class PDFSample {
 	private static Header getHeader() {
 		return Header.builder()
 				.propertyName("Moevenpick Amsterdam")
+				.propertyNameColor(Color.black)
+				.propertyNameFont(PDType1Font.COURIER_BOLD)
+				.propertyNameFontSize(20)
 				.reportName("Last Room Value report")
+				.reportNameColor(Color.black)
+				.reportNameFont(PDType1Font.COURIER)
+				.reportNameFontSize(12)
 				.metaKeyVal(getHeaderMap())
+				.metaKeyValColor(Color.black)
+				.metaKeyValFont(PDType1Font.TIMES_ROMAN)
+				.metaKeyValFontSize(10)
 				.build();
 	}
 
