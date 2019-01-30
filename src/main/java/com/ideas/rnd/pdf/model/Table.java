@@ -17,7 +17,6 @@ import java.util.List;
 public class Table {
 	// Table attributes
 	private float margin;
-	private float topMargin;
 	private float height;
 	private PDRectangle pageSize;
 	private boolean isLandscape;

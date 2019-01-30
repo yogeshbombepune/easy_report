@@ -17,8 +17,6 @@ public class PDFSample {
 	private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
 	private static final float MARGIN = 36;
 	private static final boolean IS_LANDSCAPE = false;
-	private static final float TOP_MARGIN = MARGIN + 45;
-
 	// Font configuration
 	private static final PDFont HEADER_TEXT_FONT = PDType1Font.HELVETICA_BOLD_OBLIQUE;
 	private static final float HEADER_FONT_SIZE = 6;
@@ -36,7 +34,7 @@ public class PDFSample {
 
 	public static void main(String[] args) throws IOException {
 		Header headerData = getHeader();
-		Table table = createContent();
+		Table table = createContent(headerData);
 		new PDFTableGenerator().generatePDF(headerData, table);
 	}
 
@@ -45,15 +43,15 @@ public class PDFSample {
 				.propertyName("Moevenpick Amsterdam")
 				.propertyNameColor(Color.black)
 				.propertyNameFont(PDType1Font.COURIER_BOLD)
-				.propertyNameFontSize(20)
+				.propertyNameFontSize(13)
 				.reportName("Last Room Value report")
 				.reportNameColor(Color.black)
 				.reportNameFont(PDType1Font.COURIER)
-				.reportNameFontSize(12)
+				.reportNameFontSize(11)
 				.metaKeyVal(getHeaderMap())
 				.metaKeyValColor(Color.black)
 				.metaKeyValFont(PDType1Font.TIMES_ROMAN)
-				.metaKeyValFontSize(10)
+				.metaKeyValFontSize(5)
 				.build();
 	}
 
@@ -67,28 +65,25 @@ public class PDFSample {
 		return headerMap;
 	}
 
-	private static Table createContent() {
+	private static Table createContent(Header headerData) {
 		List<Column> columns = getColumns();
 		List<Range> fixedColumns = geFixedColumnRanges();
 		String[][] content = getContent();
-		float tableHeight = IS_LANDSCAPE ? PAGE_SIZE.getWidth() - MARGIN - TOP_MARGIN : PAGE_SIZE.getHeight() - MARGIN - TOP_MARGIN;
 		double totalRowWidth = columns.stream().mapToDouble(Column::getWidth).sum();
-		return getTable(columns, fixedColumns, content, tableHeight, (float) totalRowWidth);
+		return getTable(columns, fixedColumns, content, (float) totalRowWidth);
 	}
 
-	private static Table getTable(List<Column> columns, List<Range> fixedColumns, String[][] content, float tableHeight, float totalRowWidth) {
+	private static Table getTable(List<Column> columns, List<Range> fixedColumns, String[][] content, float totalRowWidth) {
 		return Table.builder()
 				.cellPadding(CELL_PADDING)
 				.columns(columns)
 				.columnHeight(COLUMN_HEIGHT)
 				.fixedColumns(fixedColumns)
 				.content(content)
-				.height(tableHeight)
 				.rowWidth(totalRowWidth)
 				.numberOfRows(content.length)
 				.rowHeight(ROW_HEIGHT)
 				.margin(MARGIN)
-				.topMargin(TOP_MARGIN)
 				.pageSize(PAGE_SIZE)
 				.isLandscape(IS_LANDSCAPE)
 				.lineColor(Color.LIGHT_GRAY)
