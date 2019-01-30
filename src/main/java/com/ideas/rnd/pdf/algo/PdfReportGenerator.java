@@ -147,36 +147,38 @@ public class PdfReportGenerator {
 		float totalWidth = table.getPageSize().getWidth() - (table.getMargin() * 2);
 		float cellWidth = totalWidth / 4;
 		float pageTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getMargin() : table.getPageSize().getHeight() - table.getMargin();
-		Map<String, Object> headerMap = header.getMetaKeyVal();
 
-		int line = (int) Math.ceil((float) (headerMap.size() - 2) / 2);
+		int line = getNumberOfHeaderLine();
 		float heightForHeaderBackground = line * table.getRowHeight();
 		int fixedLine = 2;
 		drawCellBackground(contentStream, table.getMargin(), pageTopY - 3 - (table.getRowHeight() * (line + fixedLine)), totalWidth, heightForHeaderBackground, Color.LIGHT_GRAY);
 
 		float nextY = pageTopY;
-
-		int textWidth = getTextWidth(header.getPropertyNameFont(), header.getPropertyName(), header.getPropertyNameFontSize());
-		float adjustX = getAdjustX(Alignment.CENTER, table.getPageSize().getWidth(), 0, textWidth);
-		writeText(contentStream, header.getPropertyNameColor(), header.getPropertyNameFont(), header.getPropertyNameFontSize(), nextY, adjustX, header.getPropertyName());
+		writeHeadingOne(contentStream, nextY);
 		nextY -= table.getRowHeight();
-
-		textWidth = getTextWidth(header.getReportNameFont(), header.getReportName(), header.getReportNameFontSize());
-		adjustX = getAdjustX(Alignment.CENTER, table.getPageSize().getWidth(), 0, textWidth);
-		writeText(contentStream, header.getReportNameColor(), header.getReportNameFont(), header.getReportNameFontSize(), nextY, adjustX, header.getReportName());
+		writeHeadingTwo(contentStream, nextY);
 		nextY -= table.getRowHeight();
+		writeHeaderLabels(contentStream, xPos, cellWidth, nextY);
+	}
 
+	/**
+	 * @param contentStream
+	 * @param xPos
+	 * @param cellWidth
+	 * @param nextY
+	 * @throws IOException
+	 */
+	private void writeHeaderLabels(PDPageContentStream contentStream, float xPos, float cellWidth, float nextY) throws IOException {
+		Map<String, Object> headerMap = header.getMetaKeyVal();
 		Set<Map.Entry<String, Object>> entries = headerMap.entrySet();
 		int flag = 0;
 		for (Map.Entry<String, Object> entry : entries) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
 
-			writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, key);
+			writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, entry.getKey());
 
 			xPos += cellWidth;
 
-			writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, value.toString());
+			writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, entry.getValue().toString());
 
 			xPos += cellWidth;
 
@@ -189,6 +191,35 @@ public class PdfReportGenerator {
 	}
 
 	/**
+	 * @return
+	 */
+	private int getNumberOfHeaderLine() {
+		return (int) Math.ceil((float) (this.header.getMetaKeyVal().size() - 2) / 2);
+	}
+
+	/**
+	 * @param contentStream
+	 * @param nextY
+	 * @throws IOException
+	 */
+	private void writeHeadingTwo(PDPageContentStream contentStream, float nextY) throws IOException {
+		int textWidth = getTextWidth(header.getReportNameFont(), header.getReportName(), header.getReportNameFontSize());
+		float adjustX = getAdjustX(Alignment.CENTER, table.getPageSize().getWidth(), 0, textWidth);
+		writeText(contentStream, header.getReportNameColor(), header.getReportNameFont(), header.getReportNameFontSize(), nextY, adjustX, header.getReportName());
+	}
+
+	/**
+	 * @param contentStream
+	 * @param nextY
+	 * @throws IOException
+	 */
+	private void writeHeadingOne(PDPageContentStream contentStream, float nextY) throws IOException {
+		int textWidth = getTextWidth(header.getPropertyNameFont(), header.getPropertyName(), header.getPropertyNameFontSize());
+		float adjustX = getAdjustX(Alignment.CENTER, table.getPageSize().getWidth(), 0, textWidth);
+		writeText(contentStream, header.getPropertyNameColor(), header.getPropertyNameFont(), header.getPropertyNameFontSize(), nextY, adjustX, header.getPropertyName());
+	}
+
+	/**
 	 * @param doc
 	 * @throws IOException
 	 */
@@ -197,29 +228,15 @@ public class PdfReportGenerator {
 		for (int pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
 			PDPage page = doc.getPage(pageNumber);
 			PDPageContentStream footerContentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
-			drawHorizontalLine(doc, footerContentStream);
+			drawLine(footerContentStream, this.footer.getLineColor(), this.footer.getLineWidth(),
+					table.getPageSize().getLowerLeftX() + table.getMargin(),
+					table.getPageSize().getUpperRightX() - table.getMargin(),
+					table.getPageSize().getLowerLeftY() + table.getMargin(),
+					table.getPageSize().getLowerLeftY() + table.getMargin());
 			drawLeftSection(doc, footerContentStream);
 			drawRightSection(numberOfPages, pageNumber + 1, footerContentStream);
 			footerContentStream.close();
 		}
-	}
-
-	/**
-	 * @param doc
-	 * @param footerContentStream
-	 * @throws IOException
-	 */
-	private void drawHorizontalLine(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
-		footerContentStream.setStrokingColor(this.footer.getLineColor() != null ? this.footer.getLineColor() : Color.LIGHT_GRAY);
-		footerContentStream.setLineWidth(this.footer.getLineWidth());
-		float yCoordinate = table.getPageSize().getLowerLeftY() + table.getMargin();
-		float startX = table.getPageSize().getLowerLeftX() + table.getMargin();
-		float endX = table.getPageSize().getUpperRightX() - table.getMargin();
-		footerContentStream.moveTo(startX, yCoordinate);
-		footerContentStream.lineTo(endX, yCoordinate);
-		footerContentStream.stroke();
-		//Reset
-		footerContentStream.setStrokingColor(Color.BLACK);
 	}
 
 	/**
@@ -239,11 +256,12 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void drawRightSection(int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
-		footerContentStream.beginText();
-		footerContentStream.setFont(PDType1Font.TIMES_ROMAN, 8);
-		footerContentStream.newLineAtOffset(table.getPageSize().getUpperRightX() - table.getMargin() - 40, table.getPageSize().getLowerLeftY() + 20);
-		footerContentStream.showText(String.format(this.footer.getPageNumberPhrase(), pageNumber, numberOfPages));
-		footerContentStream.endText();
+		writeText(footerContentStream,
+				Color.BLACK, PDType1Font.TIMES_ROMAN,
+				8,
+				table.getPageSize().getLowerLeftY() + 20,
+				table.getPageSize().getUpperRightX() - table.getMargin() - 40,
+				String.format(this.footer.getPageNumberPhrase(), pageNumber, numberOfPages));
 	}
 
 
