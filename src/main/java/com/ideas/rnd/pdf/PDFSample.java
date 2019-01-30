@@ -59,7 +59,7 @@ public class PDFSample {
 		return Footer.builder()
 				.lineColor(Color.lightGray)
 				.lineWidth(0.6f)
-				.pageNumberPhrase("Page %s off %s")
+				.pageNumberPhrase("Page %s of %s")
 				.logoImage(new File(resource.getPath()))
 				.build();
 	}
