@@ -6,7 +6,9 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,7 +37,31 @@ public class PDFSample {
 	public static void main(String[] args) throws IOException {
 		Header headerData = getHeader();
 		Table table = createContent(headerData);
-		new PDFTableGenerator().generatePDF(headerData, table);
+		Graph graph = getGraph();
+		Footer footer = getFooterConfiguration();
+		new PDFTableGenerator().generatePDF(headerData, table, graph, footer);
+	}
+
+	private static Graph getGraph() {
+		URL resource1 = PDFSample.class.getClassLoader().getResource("images/graph1.jpg");
+		URL resource2 = PDFSample.class.getClassLoader().getResource("images/graph2.png");
+		List<File> graphs = new ArrayList<>();
+		assert resource1 != null;
+		graphs.add(new File(resource1.getPath()));
+		assert resource2 != null;
+		graphs.add(new File(resource2.getPath()));
+		return new Graph(graphs);
+	}
+
+	private static Footer getFooterConfiguration() {
+		URL resource = PDFSample.class.getClassLoader().getResource("images/logo.png");
+		assert resource != null;
+		return Footer.builder()
+				.lineColor(Color.lightGray)
+				.lineWidth(0.6f)
+				.pageNumberPhrase("Page %s off %s")
+				.logoImage(new File(resource.getPath()))
+				.build();
 	}
 
 	private static Header getHeader() {
@@ -62,6 +88,9 @@ public class PDFSample {
 		headerMap.put("Start Date:", "Sun 29-Jun-2014");
 		headerMap.put("End Date:", "Tue 29-Jun-2014");
 		headerMap.put("Legend:", "(*) Indicates an active Hotel Forecast Override on this date");
+		headerMap.put("Legend:1", "(*) Indicates an active Hotel Forecast Override on this date");
+		headerMap.put("Legend:2", "(*) Indicates an active Hotel Forecast Override on this date");
+
 		return headerMap;
 	}
 

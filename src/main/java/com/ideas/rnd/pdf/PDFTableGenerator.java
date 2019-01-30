@@ -12,24 +12,30 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
 
 class PDFTableGenerator {
 	private Table table;
 	private Header header;
+	private Graph graph;
+	private Footer footer;
 	private float tableHeight;
 
 	// Generates document from Table object
-	void generatePDF(Header header, Table table) throws IOException {
+	void generatePDF(Header header, Table table, Graph graph, Footer footer) throws IOException {
 		try (PDDocument doc = new PDDocument()) {
 			this.header = header;
 			this.table = table;
+			this.footer = footer;
+			this.graph = graph;
 			this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 			drawTable(doc);
-			addGraphs(doc);
+			if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
+				addGraphs(doc);
+			}
 			addFooter(doc);
 			doc.save("results.pdf");
 		}
@@ -43,12 +49,16 @@ class PDFTableGenerator {
 		float totalHeightForGraph = this.tableHeight;
 		float totalWidthForGraph = table.getPageSize().getWidth() - (2 * table.getMargin());
 		float tableTopY = this.tableHeight;
+		for (File graphFile : this.graph.getGraphs()) {
+			placeGraph(doc, totalHeightForGraph, totalWidthForGraph, tableTopY, graphFile);
+		}
+	}
+
+	private void placeGraph(PDDocument doc, float totalHeightForGraph, float totalWidthForGraph, float tableTopY, File graphFile) throws IOException {
 		PDPage page = generatePage(doc);
 		PDPageContentStream contentStream = generateContentStream(doc, page);
 		addHeader(contentStream);
-		URL resource = getClass().getClassLoader().getResource("images/graph1.jpg");
-		assert resource != null;
-		PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), doc);
+		PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(graphFile, doc);
 		float height = getGraphAdjustmentScale(totalHeightForGraph, pdImage.getHeight());
 		float width = getGraphAdjustmentScale(totalWidthForGraph, pdImage.getWidth());
 		tableTopY -= height;
@@ -126,8 +136,8 @@ class PDFTableGenerator {
 	}
 
 	private void drawHorizontalLine(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
-		footerContentStream.setStrokingColor(Color.LIGHT_GRAY);
-		footerContentStream.setLineWidth(0.6f);
+		footerContentStream.setStrokingColor(this.footer.getLineColor() != null ? this.footer.getLineColor() : Color.LIGHT_GRAY);
+		footerContentStream.setLineWidth(this.footer.getLineWidth());
 		float yCoordinate = table.getPageSize().getLowerLeftY() + table.getMargin();
 		float startX = table.getPageSize().getLowerLeftX() + table.getMargin();
 		float endX = table.getPageSize().getUpperRightX() - table.getMargin();
@@ -139,10 +149,7 @@ class PDFTableGenerator {
 	}
 
 	private void drawLeftSection(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
-		//URL resource = getClass().getClassLoader().getResource("images" + System.getProperty("file.separator") + "logo.png");
-		URL resource = getClass().getClassLoader().getResource("images/logo.png");
-		assert resource != null;
-		PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), doc);
+		PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(this.footer.getLogoImage(), doc);
 		footerContentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), table.getPageSize().getLowerLeftY() + 20, 30, 15);
 	}
 
@@ -150,7 +157,8 @@ class PDFTableGenerator {
 		footerContentStream.beginText();
 		footerContentStream.setFont(PDType1Font.TIMES_ROMAN, 8);
 		footerContentStream.newLineAtOffset(table.getPageSize().getUpperRightX() - table.getMargin() - 40, table.getPageSize().getLowerLeftY() + 20);
-		footerContentStream.showText("Page " + pageNumber + " of " + numberOfPages);
+		footerContentStream.showText(String.format(this.footer.getPageNumberPhrase(), pageNumber, numberOfPages));
+		//footerContentStream.showText("Page " + pageNumber + " of " + numberOfPages);
 		footerContentStream.endText();
 	}
 
@@ -459,7 +467,7 @@ class PDFTableGenerator {
 	}
 
 	private PDPageContentStream generateContentStream(PDDocument doc, PDPage page) throws IOException {
-		PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
+		PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.PREPEND, true, true);
 		if (table.isLandscape()) {
 			Matrix matrix = new Matrix(0, 1, -1, 0, table.getPageSize().getWidth(), 0);
 			contentStream.transform(matrix);
