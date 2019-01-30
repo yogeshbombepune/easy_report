@@ -654,7 +654,7 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private PDPageContentStream generateContentStream(PDDocument doc, PDPage page) throws IOException {
-		PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.PREPEND, true, true);
+		PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
 		if (table.isLandscape()) {
 			Matrix matrix = new Matrix(0, 1, -1, 0, table.getPageSize().getWidth(), 0);
 			contentStream.transform(matrix);
