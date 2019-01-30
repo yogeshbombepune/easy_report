@@ -1,5 +1,6 @@
 package com.ideas.rnd.pdf;
 
+import com.ideas.rnd.pdf.algo.PdfReportGenerator;
 import com.ideas.rnd.pdf.model.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -14,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PDFSample {
+public class Driver {
 	// Page configuration
 	private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
 	private static final float MARGIN = 36;
@@ -39,12 +40,13 @@ public class PDFSample {
 		Table table = createContent(headerData);
 		Graph graph = getGraph();
 		Footer footer = getFooterConfiguration();
-		new PDFTableGenerator().generatePDF(headerData, table, graph, footer);
+		PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(headerData, footer, table, graph);
+		pdfReportGenerator.generatePDF();
 	}
 
 	private static Graph getGraph() {
-		URL resource1 = PDFSample.class.getClassLoader().getResource("images/graph1.jpg");
-		URL resource2 = PDFSample.class.getClassLoader().getResource("images/graph2.png");
+		URL resource1 = Driver.class.getClassLoader().getResource("images/graph1.jpg");
+		URL resource2 = Driver.class.getClassLoader().getResource("images/graph2.png");
 		List<File> graphs = new ArrayList<>();
 		assert resource1 != null;
 		graphs.add(new File(resource1.getPath()));
@@ -54,7 +56,7 @@ public class PDFSample {
 	}
 
 	private static Footer getFooterConfiguration() {
-		URL resource = PDFSample.class.getClassLoader().getResource("images/logo.png");
+		URL resource = Driver.class.getClassLoader().getResource("images/logo.png");
 		assert resource != null;
 		return Footer.builder()
 				.lineColor(Color.lightGray)
