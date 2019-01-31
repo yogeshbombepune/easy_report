@@ -40,7 +40,7 @@ public class Table {
 	private Integer numberOfRows;
 	private List<Column> columns;
 	private List<Range> fixedColumns;
-	private String[][] content;
+	private List<List<String>> content;
 	private float cellPadding;
 
 	public Integer getNumberOfColumns() {

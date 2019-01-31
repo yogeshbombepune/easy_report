@@ -37,7 +37,7 @@ public class Driver {
 
 	public static void main(String[] args) throws IOException {
 		Header headerData = getHeader();
-		Table table = createContent(headerData);
+		Table table = createContent();
 		Graph graph = getGraph();
 		Footer footer = getFooterConfiguration();
 		PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(headerData, footer, table, graph);
@@ -99,7 +99,7 @@ public class Driver {
 		return headerMap;
 	}
 
-	private static Table createContent(Header headerData) {
+	private static Table createContent() {
 		List<Column> columns = getColumns();
 		List<Range> fixedColumns = geFixedColumnRanges();
 		String[][] content = getContent();
@@ -113,7 +113,7 @@ public class Driver {
 				.columns(columns)
 				.columnHeight(COLUMN_HEIGHT)
 				.fixedColumns(fixedColumns)
-				.content(content)
+				.content(null)
 				.rowWidth(totalRowWidth)
 				.numberOfRows(content.length)
 				.rowHeight(ROW_HEIGHT)

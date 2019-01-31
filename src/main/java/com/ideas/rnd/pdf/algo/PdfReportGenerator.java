@@ -1,6 +1,5 @@
 package com.ideas.rnd.pdf.algo;
 
-import com.google.common.collect.ObjectArrays;
 import com.ideas.rnd.pdf.model.*;
 import org.apache.commons.text.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -464,8 +463,9 @@ public class PdfReportGenerator {
 
 			// Write content
 			for (List<String> strings : currentPageContent) {
-				Object[] objects = strings.toArray();
-				writeContentLine((String[]) objects, contentStream, nextTextX, nextTextY, table, range, ranges.get(0).getTo(), isFixedColumn);
+				Object[] objectArray = strings.toArray();
+				String[] stringArray = Arrays.copyOf(objectArray, objectArray.length, String[].class);
+				writeContentLine(stringArray, contentStream, nextTextX, nextTextY, table, range, ranges.get(0).getTo(), isFixedColumn);
 				nextTextY -= table.getRowHeight();
 				if (range.getFrom() == 0) {
 					nextTextX = table.getMargin() + table.getCellPadding();
@@ -624,14 +624,14 @@ public class PdfReportGenerator {
 		if (endRange > table.getNumberOfRows()) {
 			endRange = table.getNumberOfRows();
 		}
-		String[][] content = table.getContent();
+		List<List<String>> content = table.getContent();
 		for (int i = startRange; i < endRange; i++) {
-			String[] commonDataChunk = Arrays.copyOfRange(content[i], ranges.get(0).getFrom(), ranges.get(0).getTo() + 1);
+			List<String> commonDataChunk = content.get(i).subList(ranges.get(0).getFrom(), ranges.get(0).getTo() + 1);
 			if (ranges.size() > 1) {
-				String[] variableChunkOfData = Arrays.copyOfRange(content[i], ranges.get(1).getFrom(), ranges.get(1).getTo() + 1);
-				commonDataChunk = ObjectArrays.concat(commonDataChunk, variableChunkOfData, String.class);
+				List<String> variableChunkOfData = content.get(i).subList(ranges.get(1).getFrom(), ranges.get(1).getTo() + 1);
+				commonDataChunk.addAll(variableChunkOfData);
 			}
-			newContentList.add(Arrays.asList(commonDataChunk));
+			newContentList.add(commonDataChunk);
 		}
 
 		return newContentList;
