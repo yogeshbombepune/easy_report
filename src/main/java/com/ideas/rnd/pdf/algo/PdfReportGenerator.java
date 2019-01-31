@@ -538,9 +538,9 @@ public class PdfReportGenerator {
 				int characterPerLine = (int) ((table.getColumns().get(from).getWidth() - 4) * text.length()) / textWidth;
 				String[] columnName = WordUtils.wrap(text, characterPerLine).split("\\r?\\n");
 				for (int j = 0; j < columnName.length; j++) {
-					textWidth = getTextWidth(table.getHeaderTextFont(), columnName[j] != null ? columnName[j] : "", table.getHeaderFontSize());
+					textWidth = getTextWidth(table.getHeaderTextFont(), columnName[j] != null ? columnName[j].trim() : "", table.getHeaderFontSize());
 					adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
-					writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY - j * table.getRowHeight(), nextTextX + adjustX, columnName[j] != null ? columnName[j] : "");
+					writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY - j * table.getRowHeight(), nextTextX + adjustX, columnName[j] != null ? columnName[j].trim() : "");
 				}
 			} else {
 				adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
