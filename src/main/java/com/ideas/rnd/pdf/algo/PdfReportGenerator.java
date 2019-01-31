@@ -7,7 +7,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
 
@@ -205,8 +204,9 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void writeHeadingTwo(PDPageContentStream contentStream, float nextY) throws IOException {
+		float width = table.isLandscape() ? table.getPageSize().getHeight() : table.getPageSize().getWidth();
 		int textWidth = getTextWidth(header.getReportNameFont(), header.getReportName(), header.getReportNameFontSize());
-		float adjustX = getAdjustX(Alignment.CENTER, table.getPageSize().getWidth(), 0, textWidth);
+		float adjustX = getAdjustX(Alignment.CENTER, width, 0, textWidth);
 		writeText(contentStream, header.getReportNameColor(), header.getReportNameFont(), header.getReportNameFontSize(), nextY, adjustX, header.getReportName());
 	}
 
@@ -216,30 +216,12 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void writeHeadingOne(PDPageContentStream contentStream, float nextY) throws IOException {
+		float width = table.isLandscape() ? table.getPageSize().getHeight() : table.getPageSize().getWidth();
 		int textWidth = getTextWidth(header.getPropertyNameFont(), header.getPropertyName(), header.getPropertyNameFontSize());
-		float adjustX = getAdjustX(Alignment.CENTER, table.getPageSize().getWidth(), 0, textWidth);
+		float adjustX = getAdjustX(Alignment.CENTER, width, 0, textWidth);
 		writeText(contentStream, header.getPropertyNameColor(), header.getPropertyNameFont(), header.getPropertyNameFontSize(), nextY, adjustX, header.getPropertyName());
 	}
 
-	/**
-	 * @param doc
-	 * @throws IOException
-	 */
-	/*private void addFooter(PDDocument doc) throws IOException {
-		int numberOfPages = doc.getNumberOfPages();
-		for (int pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
-			PDPage page = doc.getPage(pageNumber);
-			PDPageContentStream footerContentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
-			drawLine(footerContentStream, this.footer.getLineColor(), this.footer.getLineWidth(),
-					table.getPageSize().getLowerLeftX() + table.getMargin(),
-					table.getPageSize().getUpperRightX() - table.getMargin(),
-					table.getPageSize().getLowerLeftY() + table.getMargin(),
-					table.getPageSize().getLowerLeftY() + table.getMargin());
-			drawLeftSection(doc, footerContentStream);
-			drawRightSection(numberOfPages, pageNumber + 1, footerContentStream);
-			footerContentStream.close();
-		}
-	}*/
 	private void printFooter(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
 		float endX = this.table.isLandscape() ? table.getPageSize().getHeight() : table.getPageSize().getUpperRightX();
 		drawLine(footerContentStream, this.footer.getLineColor(), this.footer.getLineWidth(),
@@ -270,9 +252,9 @@ public class PdfReportGenerator {
 	private void drawRightSection(int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
 		float x = this.table.isLandscape() ? table.getPageSize().getHeight() - table.getMargin() - 40 : table.getPageSize().getUpperRightX() - table.getMargin() - 40;
 		writeText(footerContentStream,
-				Color.BLACK, PDType1Font.TIMES_ROMAN,
-				8,
-				table.getPageSize().getLowerLeftY() + 20,
+				this.footer.getPageNumberPhraseColor(), this.footer.getPageNumberPhraseFont(),
+				this.footer.getPageNumberPhraseSize(),
+				table.getPageSize().getLowerLeftY() + 25,
 				x,
 				String.format(this.footer.getPageNumberPhrase(), pageNumber, numberOfPages));
 	}
@@ -448,7 +430,7 @@ public class PdfReportGenerator {
 	 * @return number of rows per page.
 	 */
 	private Integer getRowsPerPage() {
-		return new Double(Math.floor((this.tableHeight - this.table.getMargin() - table.getColumnHeight()) / table.getRowHeight())).intValue();
+		return new Double(Math.floor((this.tableHeight - this.table.getMargin() - table.getColumnHeight()) / table.getRowHeight())).intValue() - 1;
 	}
 
 	/**
@@ -475,9 +457,7 @@ public class PdfReportGenerator {
 
 			// Write column headers
 			String[] columnsNamesAsArray = table.getColumnsNamesAsArray(table.getColumns().subList(range.getFrom(), range.getTo() + 1));
-			contentStream.setNonStrokingColor(Color.white);
 			writeHeaderContentLine(columnsNamesAsArray, contentStream, nextTextX, nextTextY, range);
-			contentStream.setNonStrokingColor(Color.BLACK);
 			nextTextY -= table.getColumnHeight();
 			nextTextX = table.getMargin() + table.getCellPadding();
 			nextTextX = getNextX(range, nextTextXForNonZeroIndex, isFixedColumn, nextTextX);

@@ -19,7 +19,7 @@ public class Driver {
 	// Page configuration
 	private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
 	private static final float MARGIN = 36;
-	private static final boolean IS_LANDSCAPE = true;
+	private static final boolean IS_LANDSCAPE = false;
 	// Font configuration
 	private static final PDFont HEADER_TEXT_FONT = PDType1Font.HELVETICA_BOLD_OBLIQUE;
 	private static final float HEADER_FONT_SIZE = 6;
@@ -62,6 +62,9 @@ public class Driver {
 				.lineColor(Color.lightGray)
 				.lineWidth(0.6f)
 				.pageNumberPhrase("Page %s of %s")
+				.pageNumberPhraseColor(Color.BLACK)
+				.pageNumberPhraseFont(PDType1Font.TIMES_BOLD)
+				.pageNumberPhraseSize(8)
 				.logoImage(new File(resource.getPath()))
 				.build();
 	}
