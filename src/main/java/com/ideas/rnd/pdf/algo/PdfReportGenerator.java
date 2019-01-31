@@ -19,6 +19,7 @@ import java.util.*;
  * @author Yogesh Bombe
  */
 public class PdfReportGenerator {
+	private String filePath;
 	private Table table;
 	private Header header;
 	private Graph graph;
@@ -39,7 +40,8 @@ public class PdfReportGenerator {
 	 * @param footer
 	 * @param table
 	 */
-	public PdfReportGenerator(Header header, Footer footer, Table table) {
+	public PdfReportGenerator(String filePath, Header header, Footer footer, Table table) {
+		this.filePath = filePath;
 		this.table = table;
 		this.header = header;
 		this.footer = footer;
@@ -53,7 +55,8 @@ public class PdfReportGenerator {
 	 * @param table
 	 * @param graph
 	 */
-	public PdfReportGenerator(Header header, Footer footer, Table table, Graph graph) {
+	public PdfReportGenerator(String filePath, Header header, Footer footer, Table table, Graph graph) {
+		this.filePath = filePath;
 		assert header != null;
 		this.header = header;
 		assert footer != null;
@@ -77,7 +80,7 @@ public class PdfReportGenerator {
 			if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
 				addGraphs(doc);
 			}
-			doc.save("results.pdf");
+			doc.save(this.filePath);
 		}
 	}
 
@@ -238,8 +241,11 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void drawLeftSection(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
-		PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(this.footer.getLogoImage(), doc);
-		footerContentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), table.getPageSize().getLowerLeftY() + 20, 30, 15);
+		if (null != this.footer && null != this.footer.getLogoImage()) {
+			PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(this.footer.getLogoImage(), doc);
+			footerContentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(),
+					table.getPageSize().getLowerLeftY() + 20, 30, 15);
+		}
 	}
 
 	/**

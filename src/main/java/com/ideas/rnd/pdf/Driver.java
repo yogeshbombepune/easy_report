@@ -40,7 +40,7 @@ public class Driver {
 		Table table = createContent();
 		Graph graph = getGraph();
 		Footer footer = getFooterConfiguration();
-		PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(headerData, footer, table, graph);
+		PdfReportGenerator pdfReportGenerator = new PdfReportGenerator("results.pdf", headerData, footer, table, graph);
 		pdfReportGenerator.generatePDF();
 	}
 
