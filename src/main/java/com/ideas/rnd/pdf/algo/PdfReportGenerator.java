@@ -26,6 +26,9 @@ public class PdfReportGenerator {
 	private Graph graph;
 	private Footer footer;
 	private float tableHeight;
+	private float tableWidth;
+	private int currentPageNumber = 0;
+	private int totalNumberOfPages;
 
 	/**
 	 * Used for restrict to create object using No arg Constructor.
@@ -43,7 +46,7 @@ public class PdfReportGenerator {
 		this.header = header;
 		this.footer = footer;
 		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
-
+		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
 	}
 
 	/**
@@ -62,6 +65,7 @@ public class PdfReportGenerator {
 		assert graph != null;
 		this.graph = graph;
 		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
+		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
 	}
 
 	/**
@@ -75,7 +79,6 @@ public class PdfReportGenerator {
 			if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
 				addGraphs(doc);
 			}
-			addFooter(doc);
 			doc.save("results.pdf");
 		}
 	}
@@ -94,11 +97,9 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void addGraphs(PDDocument doc) throws IOException {
-		float totalHeightForGraph = this.tableHeight;
-		float totalWidthForGraph = table.getPageSize().getWidth() - (2 * table.getMargin());
 		float tableTopY = this.tableHeight;
 		for (File graphFile : this.graph.getGraphs()) {
-			drawGraph(doc, totalHeightForGraph, totalWidthForGraph, tableTopY, graphFile);
+			drawGraph(doc, this.tableHeight, this.tableWidth, tableTopY, graphFile);
 		}
 	}
 
@@ -110,7 +111,7 @@ public class PdfReportGenerator {
 	 * @param graphFile
 	 * @throws IOException
 	 */
-	private void drawGraph(PDDocument doc, float totalHeightForGraph, float totalWidthForGraph, float tableTopY, File graphFile) throws IOException {
+	private void drawGraph(PDDocument doc, final float totalHeightForGraph, final float totalWidthForGraph, float tableTopY, File graphFile) throws IOException {
 		PDPage page = generatePage(doc);
 		PDPageContentStream contentStream = generateContentStream(doc, page);
 		addHeader(contentStream);
@@ -119,6 +120,7 @@ public class PdfReportGenerator {
 		float width = getGraphAdjustmentScale(totalWidthForGraph, pdImage.getWidth());
 		tableTopY -= height;
 		contentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), tableTopY, width, height);
+		printFooter(doc, contentStream);
 		contentStream.close();
 	}
 
@@ -144,7 +146,7 @@ public class PdfReportGenerator {
 	 */
 	private void addHeader(PDPageContentStream contentStream) throws IOException {
 		float xPos = table.getMargin();
-		float totalWidth = table.getPageSize().getWidth() - (table.getMargin() * 2);
+		float totalWidth = this.tableWidth;
 		float cellWidth = totalWidth / 4;
 		float pageTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getMargin() : table.getPageSize().getHeight() - table.getMargin();
 
@@ -223,7 +225,7 @@ public class PdfReportGenerator {
 	 * @param doc
 	 * @throws IOException
 	 */
-	private void addFooter(PDDocument doc) throws IOException {
+	/*private void addFooter(PDDocument doc) throws IOException {
 		int numberOfPages = doc.getNumberOfPages();
 		for (int pageNumber = 0; pageNumber < numberOfPages; pageNumber++) {
 			PDPage page = doc.getPage(pageNumber);
@@ -237,6 +239,16 @@ public class PdfReportGenerator {
 			drawRightSection(numberOfPages, pageNumber + 1, footerContentStream);
 			footerContentStream.close();
 		}
+	}*/
+	private void printFooter(PDDocument doc, PDPageContentStream footerContentStream) throws IOException {
+		float endX = this.table.isLandscape() ? table.getPageSize().getHeight() : table.getPageSize().getUpperRightX();
+		drawLine(footerContentStream, this.footer.getLineColor(), this.footer.getLineWidth(),
+				table.getPageSize().getLowerLeftX() + table.getMargin(),
+				endX - table.getMargin(),
+				table.getPageSize().getLowerLeftY() + table.getMargin(),
+				table.getPageSize().getLowerLeftY() + table.getMargin());
+		drawLeftSection(doc, footerContentStream);
+		drawRightSection(this.totalNumberOfPages, ++this.currentPageNumber, footerContentStream);
 	}
 
 	/**
@@ -256,11 +268,12 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void drawRightSection(int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
+		float x = this.table.isLandscape() ? table.getPageSize().getHeight() - table.getMargin() - 40 : table.getPageSize().getUpperRightX() - table.getMargin() - 40;
 		writeText(footerContentStream,
 				Color.BLACK, PDType1Font.TIMES_ROMAN,
 				8,
 				table.getPageSize().getLowerLeftY() + 20,
-				table.getPageSize().getUpperRightX() - table.getMargin() - 40,
+				x,
 				String.format(this.footer.getPageNumberPhrase(), pageNumber, numberOfPages));
 	}
 
@@ -275,11 +288,12 @@ public class PdfReportGenerator {
 		// Calculate pagination
 		Integer rowsPerPage;
 		int numberOfPages;
-		float pageWidth = table.getPageSize().getWidth();
+		float pageWidth = this.tableWidth;
 		float totalRowWidth = table.getRowWidth();
 		rowsPerPage = getRowsPerPage();
 		List<List<Range>> rangesOfColumnRangePerPage;
 		numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
+
 		List<Range> fixedColumns = table.getFixedColumns();
 		boolean isFixedColumn = fixedColumns != null && fixedColumns.size() > 0;
 		if (pageWidth < totalRowWidth) {
@@ -287,7 +301,7 @@ public class PdfReportGenerator {
 		} else {
 			rangesOfColumnRangePerPage = getSinglePageRange();
 		}
-
+		calculatePageCountForFooter(numberOfPages, rangesOfColumnRangePerPage);
 		// Generate each page, get the content and draw it
 		for (int pageCount = 0; pageCount < numberOfPages; pageCount++) {
 			for (List<Range> range : rangesOfColumnRangePerPage) {
@@ -296,7 +310,16 @@ public class PdfReportGenerator {
 				addHeader(contentStream);
 				List<List<String>> currentPageContent = getContentForCurrentPage(rowsPerPage, pageCount, range);
 				drawCurrentPage(currentPageContent, contentStream, range, isFixedColumn);
+				printFooter(doc, contentStream);
+				contentStream.close();
 			}
+		}
+	}
+
+	private void calculatePageCountForFooter(int numberOfPages, List<List<Range>> rangesOfColumnRangePerPage) {
+		this.totalNumberOfPages = numberOfPages * rangesOfColumnRangePerPage.size();
+		if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
+			this.totalNumberOfPages += this.graph.getGraphs().size();
 		}
 	}
 
@@ -323,7 +346,7 @@ public class PdfReportGenerator {
 	 */
 	private List<List<Range>> getRangesOfColumnRangePerPageNew(boolean isFixedColumn) {
 		List<List<Range>> listList = new ArrayList<>();
-		float totalWidth = table.getPageSize().getWidth() - (table.getMargin() * 2);
+		float totalWidth = this.tableWidth;
 		float xPos = totalWidth;
 
 		int count = 0;
@@ -471,7 +494,6 @@ public class PdfReportGenerator {
 
 			nextTextXForNonZeroIndex = nextTextX + ranges.get(0).getOffSet();
 		}
-		contentStream.close();
 	}
 
 	/**
