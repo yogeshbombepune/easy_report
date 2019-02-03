@@ -17,7 +17,7 @@ public class Driver {
     // Page configuration
     private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
     private static final float MARGIN = 36;
-    private static final boolean IS_LANDSCAPE = false;
+    private static final boolean IS_LANDSCAPE = true;
     // Font configuration
     private static final PDFont HEADER_TEXT_FONT = PDType1Font.HELVETICA_BOLD_OBLIQUE;
     private static final float HEADER_FONT_SIZE = 6;
@@ -134,7 +134,8 @@ public class Driver {
         String[] arr = {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"};
         List<List<String>> rows = new ArrayList<>();
         for (int row = 0; row < 100; row++) {
-            rows.add(Arrays.asList(arr));
+            List<String> modifiableList = new ArrayList(Arrays.asList(arr));
+            rows.add(modifiableList);
         }
         return rows;
     }
@@ -150,7 +151,7 @@ public class Driver {
 
     private static List<Column> getColumns() {
         List<Column> columns = new ArrayList<>();
-        columns.add(Column.builder().name("FirstName FirstName FirstName").width(50).alignment(Alignment.CENTER).build());
+        columns.add(Column.builder().name("FirstName FirstName,FirstName").width(50).alignment(Alignment.CENTER).build());
         columns.add(Column.builder().name("LastName").width(50).alignment(Alignment.CENTER).build());
         columns.add(Column.builder().name("Email").width(150).alignment(Alignment.CENTER).build());
         columns.add(Column.builder().name("ZipCode").width(43).alignment(Alignment.CENTER).build());
