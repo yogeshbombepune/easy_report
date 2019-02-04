@@ -2,26 +2,34 @@ package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.algo.PdfReportGenerator;
 import com.ideas.rnd.pdf.model.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
 public class ReportPdfImpl implements ReportPdf {
 
 	@Override
-	public void export(String fileName) throws IOException {
+	public void export(String fileName) throws Exception {
+
 		List<Column> columnConfiguration = columnConfiguration();
 
 		List<List<String>> populateData = populateData();
 
 		Table table = getTable(columnConfiguration, populateData);
 
-		PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(fileName, headerConfiguration(),
-				footerConfiguration(), table, getGraphs());
+		try (PDDocument doc = new PDDocument()) {
+			PDFont pdFont = ReportPdf.loadFont(doc);
 
-		pdfReportGenerator.generatePDF();
+			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc, pdFont, headerConfiguration(),
+					footerConfiguration(), table, getGraphs());
+
+			pdfReportGenerator.getPDF();
+
+			doc.save(fileName);
+		}
 
 	}
 
@@ -87,7 +95,7 @@ public class ReportPdfImpl implements ReportPdf {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().name("FirstName1|FirstName2|FirstName3").width(50).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("LastName").width(50).alignment(Alignment.CENTER).build());
-		columns.add(Column.builder().name("Email").width(150).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("电子邮件").width(150).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("ZipCode").width(43).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("MailOptIn").width(50).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("Code").width(80).alignment(Alignment.CENTER).build());
@@ -121,8 +129,8 @@ public class ReportPdfImpl implements ReportPdf {
 
 	@Override
 	public Graph getGraphs() {
-		URL resource1 = Driver.class.getClassLoader().getResource("images/graph1.jpg");
-		URL resource2 = Driver.class.getClassLoader().getResource("images/graph2.png");
+		URL resource1 = ReportPdfImpl.class.getClassLoader().getResource("images/graph1.jpg");
+		URL resource2 = ReportPdfImpl.class.getClassLoader().getResource("images/graph2.png");
 		List<File> graphs = new ArrayList<>();
 		assert resource1 != null;
 		graphs.add(new File(resource1.getPath()));

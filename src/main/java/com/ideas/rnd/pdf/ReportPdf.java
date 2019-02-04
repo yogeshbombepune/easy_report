@@ -1,8 +1,12 @@
 package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.model.*;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.awt.*;
@@ -12,6 +16,9 @@ import java.net.URL;
 import java.util.List;
 
 public interface ReportPdf {
+
+	File font_file = new File("C:\\Users\\idnyob\\IdeaProjects\\rnd\\src\\main\\resources\\fonts\\ARIALUNI.TTF");
+
 	/**
 	 * Page Configuration
 	 */
@@ -75,7 +82,19 @@ public interface ReportPdf {
 	float TABLE_CELL_PADDING = 2;
 	float TABLE_COLUMN_HEIGHT = TABLE_ROW_HEIGHT;
 
-	void export(String fileName) throws IOException;
+	static PDFont loadFont(PDDocument document) throws Exception {
+		try {
+			PDFont font = PDType0Font.load(document, font_file);
+			PDResources res = new PDResources();
+			COSName add = res.add(font);
+			return font;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new IOException();
+		}
+	}
+
+	void export(String fileName) throws Exception;
 
 	Header headerConfiguration();
 
@@ -86,7 +105,7 @@ public interface ReportPdf {
 	List<List<String>> populateData();
 
 	default Footer footerConfiguration() {
-		URL resource = Driver.class.getClassLoader().getResource("images/logo.png");
+		URL resource = ReportPdf.class.getClassLoader().getResource("images/logo.png");
 		assert resource != null;
 		return Footer.builder()
 				.lineColor(PAGE_FOOTER_LINE_COLOR)

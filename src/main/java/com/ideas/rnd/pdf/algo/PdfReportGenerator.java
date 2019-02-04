@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * @author Yogesh Bombe
  */
 public class PdfReportGenerator {
-	private String filePath;
+	private PDDocument doc;
 	private Table table;
 	private Header header;
 	private Graph graph;
@@ -29,6 +29,7 @@ public class PdfReportGenerator {
 	private float tableWidth;
 	private int currentPageNumber = 0;
 	private int totalNumberOfPages;
+	private PDFont font;
 
 	/**
 	 * Used for restrict to create object using No arg Constructor.
@@ -37,15 +38,52 @@ public class PdfReportGenerator {
 	}
 
 	/**
+	 * @param doc
 	 * @param header
 	 * @param footer
 	 * @param table
 	 */
-	public PdfReportGenerator(String filePath, Header header, Footer footer, Table table) {
-		this.filePath = filePath;
+	public PdfReportGenerator(PDDocument doc, Header header, Footer footer, Table table) {
+		this.doc = doc;
 		this.table = table;
 		this.header = header;
 		this.footer = footer;
+		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
+		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
+	}
+
+	/**
+	 * @param doc
+	 * @param font
+	 * @param header
+	 * @param footer
+	 * @param table
+	 */
+	public PdfReportGenerator(PDDocument doc, PDFont font, Header header, Footer footer, Table table) {
+		this.doc = doc;
+		this.font = font;
+		this.table = table;
+		this.header = header;
+		this.footer = footer;
+		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
+		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
+	}
+
+	/**
+	 * @param doc
+	 * @param font
+	 * @param header
+	 * @param footer
+	 * @param table
+	 * @param graph
+	 */
+	public PdfReportGenerator(PDDocument doc, PDFont font, Header header, Footer footer, Table table, Graph graph) {
+		this.doc = doc;
+		this.header = header;
+		this.footer = footer;
+		this.font = font;
+		this.table = table;
+		this.graph = graph;
 		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
 	}
@@ -56,15 +94,11 @@ public class PdfReportGenerator {
 	 * @param table
 	 * @param graph
 	 */
-	public PdfReportGenerator(String filePath, Header header, Footer footer, Table table, Graph graph) {
-		this.filePath = filePath;
-		assert header != null;
+	public PdfReportGenerator(PDDocument doc, Header header, Footer footer, Table table, Graph graph) {
+		this.doc = doc;
 		this.header = header;
-		assert footer != null;
 		this.footer = footer;
-		assert table != null;
 		this.table = table;
-		assert graph != null;
 		this.graph = graph;
 		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
@@ -75,13 +109,14 @@ public class PdfReportGenerator {
 	 *
 	 * @throws IOException
 	 */
-	public void generatePDF() throws IOException {
-		try (PDDocument doc = new PDDocument()) {
-			drawTable(doc);
-			if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
-				addGraphs(doc);
-			}
-			doc.save(this.filePath);
+	public void getPDF() throws IOException {
+		drawTable();
+		addGraph();
+	}
+
+	private void addGraph() throws IOException {
+		if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
+			addGraphs();
 		}
 	}
 
@@ -95,27 +130,27 @@ public class PdfReportGenerator {
 	/**
 	 * Used to draw graphs
 	 *
-	 * @param doc
+	 *
 	 * @throws IOException
 	 */
-	private void addGraphs(PDDocument doc) throws IOException {
+	private void addGraphs() throws IOException {
 		float tableTopY = this.tableHeight;
 		for (File graphFile : this.graph.getGraphs()) {
-			drawGraph(doc, this.tableHeight, this.tableWidth, tableTopY, graphFile);
+			drawGraph(this.tableHeight, this.tableWidth, tableTopY, graphFile);
 		}
 	}
 
 	/**
-	 * @param doc
+	 *
 	 * @param totalHeightForGraph
 	 * @param totalWidthForGraph
 	 * @param tableTopY
 	 * @param graphFile
 	 * @throws IOException
 	 */
-	private void drawGraph(PDDocument doc, final float totalHeightForGraph, final float totalWidthForGraph, float tableTopY, File graphFile) throws IOException {
-		PDPage page = generatePage(doc);
-		PDPageContentStream contentStream = generateContentStream(doc, page);
+	private void drawGraph(final float totalHeightForGraph, final float totalWidthForGraph, float tableTopY, File graphFile) throws IOException {
+		PDPage page = generatePage();
+		PDPageContentStream contentStream = generateContentStream(page);
 		addHeader(contentStream);
 		PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(graphFile, doc);
 		float height = getGraphAdjustmentScale(totalHeightForGraph, pdImage.getHeight());
@@ -269,10 +304,9 @@ public class PdfReportGenerator {
 	/**
 	 * Configures basic setup for the table and draws it page by page
 	 *
-	 * @param doc
 	 * @throws IOException
 	 */
-	private void drawTable(PDDocument doc) throws IOException {
+	private void drawTable() throws IOException {
 		// Calculate pagination
 		Integer rowsPerPage;
 		int numberOfPages;
@@ -293,8 +327,8 @@ public class PdfReportGenerator {
 		// Generate each page, get the content and draw it
 		for (int pageCount = 0; pageCount < numberOfPages; pageCount++) {
 			for (List<Range> range : rangesOfColumnRangePerPage) {
-				PDPage page = generatePage(doc);
-				PDPageContentStream contentStream = generateContentStream(doc, page);
+				PDPage page = generatePage();
+				PDPageContentStream contentStream = generateContentStream(page);
 				addHeader(contentStream);
 				List<List<String>> currentPageContent = getContentForCurrentPage(rowsPerPage, pageCount, range);
 				drawCurrentPage(currentPageContent, contentStream, range, isFixedColumn);
@@ -653,24 +687,24 @@ public class PdfReportGenerator {
 	}
 
 	/**
-	 * @param doc
+	 *
 	 * @return
 	 */
-	private PDPage generatePage(PDDocument doc) {
+	private PDPage generatePage() {
 		PDPage page = new PDPage();
 		page.setMediaBox(table.getPageSize());
 		page.setRotation(table.isLandscape() ? 90 : 0);
-		doc.addPage(page);
+		this.doc.addPage(page);
 		return page;
 	}
 
 	/**
-	 * @param doc
+	 *
 	 * @param page
 	 * @return
 	 * @throws IOException
 	 */
-	private PDPageContentStream generateContentStream(PDDocument doc, PDPage page) throws IOException {
+	private PDPageContentStream generateContentStream(PDPage page) throws IOException {
 		PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
 		if (table.isLandscape()) {
 			Matrix matrix = new Matrix(0, 1, -1, 0, table.getPageSize().getWidth(), 0);
@@ -732,7 +766,11 @@ public class PdfReportGenerator {
 	private void writeText(PDPageContentStream contentStream, Color textColor, PDFont textFont, float fontSize, float y, float x, String text) throws IOException {
 		contentStream.beginText();
 		contentStream.setNonStrokingColor(textColor);
-		contentStream.setFont(textFont, fontSize);
+		if (null != this.font) {
+			contentStream.setFont(this.font, fontSize);
+		} else {
+			contentStream.setFont(textFont, fontSize);
+		}
 		contentStream.newLineAtOffset(x, y);
 		contentStream.showText(text);
 		contentStream.endText();
@@ -794,7 +832,12 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private int getTextWidth(PDFont textFont, String text, float fontSize) throws IOException {
-		return (int) ((textFont.getStringWidth(text) / 1000) * fontSize);
+		if (null != this.font) {
+			return (int) ((this.font.getStringWidth(text) / 1000) * fontSize);
+		} else {
+			return (int) ((textFont.getStringWidth(text) / 1000) * fontSize);
+		}
+
 	}
 
 }
