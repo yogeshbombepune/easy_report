@@ -1,20 +1,15 @@
 package com.ideas.rnd.pdf;
 
-import com.ideas.rnd.pdf.algo.PdfReportGenerator;
-import com.ideas.rnd.pdf.model.*;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.*;
-import java.util.List;
 
 public class Driver {
-    // Page configuration
+
+	public static void main(String[] args) throws IOException {
+		ReportPdf reportPdf = new ReportPdfImpl();
+		reportPdf.export("result.pdf");
+	}
+
+    /*// Page configuration
     private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
     private static final float MARGIN = 36;
     private static final boolean IS_LANDSCAPE = true;
@@ -44,7 +39,7 @@ public class Driver {
 
     private static Graph getGraph() {
         URL resource1 = Driver.class.getClassLoader().getResource("images/graph1.jpg");
-        URL resource2 = Driver.class.getClassLoader().getResource("images/graph1.jpg");
+        URL resource2 = Driver.class.getClassLoader().getResource("images/graph2.png");
         List<File> graphs = new ArrayList<>();
         assert resource1 != null;
         graphs.add(new File(resource1.getPath()));
@@ -162,5 +157,5 @@ public class Driver {
         columns.add(Column.builder().name("Date").width(120).alignment(Alignment.CENTER).build());
         columns.add(Column.builder().name("Channel").width(43).alignment(Alignment.CENTER).build());
         return columns;
-    }
+    }*/
 }

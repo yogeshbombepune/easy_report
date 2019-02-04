@@ -1,6 +1,7 @@
 package com.ideas.rnd.pdf.algo;
 
 import com.ideas.rnd.pdf.model.*;
+import org.apache.commons.text.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -11,8 +12,9 @@ import org.apache.pdfbox.util.Matrix;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author Yogesh Bombe
@@ -535,8 +537,15 @@ public class PdfReportGenerator {
 			float adjustX;
 			if (textWidth > table.getColumns().get(from).getWidth()) {
 				int characterPerLine = (int) ((table.getColumns().get(from).getWidth() - 4) * text.length()) / textWidth;
-				//String[] columnName = WordUtils.wrap(text, characterPerLine).split("\\r?\\n");
-				String[] columnName = text.split("\\r?\\n?,");
+				String[] columnName;
+				if (table.isColumnWordWrapEnable()) {
+					columnName = WordUtils.wrap(text, characterPerLine).split("\\r?\\n");
+				} else {
+					if (null != table.getSplitRegex())
+						columnName = text.split(Pattern.quote(table.getSplitRegex()));
+					else
+						columnName = text.split("\\r?\\n?,");
+				}
 				for (int j = 0; j < columnName.length; j++) {
 					textWidth = getTextWidth(table.getHeaderTextFont(), columnName[j] != null ? columnName[j].trim() : "", table.getHeaderFontSize());
 					adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);

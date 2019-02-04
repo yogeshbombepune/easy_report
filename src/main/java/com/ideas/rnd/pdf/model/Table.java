@@ -25,6 +25,7 @@ public class Table {
 	private float columnHeight;
 	private boolean columnWordWrapEnable;
 	private boolean columnSplitEnable;
+	private String splitRegex;
 	private float lineWidth;
 	private Color lineColor;
 
