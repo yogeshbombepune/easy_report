@@ -280,7 +280,7 @@ public class PdfReportGenerator {
 		if (null != this.footer && null != this.footer.getLogoImage()) {
 			PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(this.footer.getLogoImage(), doc);
 			footerContentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(),
-					table.getPageSize().getLowerLeftY() + 20, 30, 15);
+					table.getPageSize().getLowerLeftY() + 20, 35, 15);
 		}
 	}
 
