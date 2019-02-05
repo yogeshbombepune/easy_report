@@ -675,9 +675,9 @@ public class PdfReportGenerator {
 		}
 		List<List<String>> content = table.getContent();
 		for (int i = startRange; i < endRange; i++) {
-			List<String> commonDataChunk = content.get(i).subList(ranges.get(0).getFrom(), ranges.get(0).getTo() + 1);
+			List<String> commonDataChunk = new ArrayList<String>(content.get(i).subList(ranges.get(0).getFrom(), ranges.get(0).getTo() + 1));
 			if (ranges.size() > 1) {
-				List<String> variableChunkOfData = content.get(i).subList(ranges.get(1).getFrom(), ranges.get(1).getTo() + 1);
+				List<String> variableChunkOfData = new ArrayList<String>(content.get(i).subList(ranges.get(1).getFrom(), ranges.get(1).getTo() + 1));
 				commonDataChunk.addAll(variableChunkOfData);
 			}
 			newContentList.add(commonDataChunk);
