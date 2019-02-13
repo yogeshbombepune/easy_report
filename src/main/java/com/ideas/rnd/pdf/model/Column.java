@@ -11,5 +11,6 @@ import lombok.*;
 public class Column {
 	private String name;
 	private float width;
-	private Alignment alignment;
+	private Alignment headerAlignment;
+	private Alignment contentAlignment;
 }

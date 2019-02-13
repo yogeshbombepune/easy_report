@@ -553,7 +553,7 @@ public class PdfReportGenerator {
 		for (; i < end; i++) {
 			String text = lineContent[i];
 			int textWidth = getTextWidth(table.getContentTextFont(), text, table.getContentFontSize());
-			float adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
+			float adjustX = getAdjustX(null != table.getColumns().get(from).getContentAlignment() ? table.getColumns().get(from).getContentAlignment() : table.getColumns().get(from).getHeaderAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
 			writeText(contentStream, table.getContentTextColor(), table.getContentTextFont(), table.getContentFontSize(), nextTextY, nextTextX + adjustX, text != null ? text : "");
 			nextTextX += table.getColumns().get(from++).getWidth();
 		}
@@ -582,11 +582,11 @@ public class PdfReportGenerator {
 				}
 				for (int j = 0; j < columnName.length; j++) {
 					textWidth = getTextWidth(table.getHeaderTextFont(), columnName[j] != null ? columnName[j].trim() : "", table.getHeaderFontSize());
-					adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
+					adjustX = getAdjustX(table.getColumns().get(from).getHeaderAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
 					writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY - j * table.getRowHeight(), nextTextX + adjustX, columnName[j] != null ? columnName[j].trim() : "");
 				}
 			} else {
-				adjustX = getAdjustX(table.getColumns().get(from).getAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
+				adjustX = getAdjustX(table.getColumns().get(from).getHeaderAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
 				writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY, nextTextX + adjustX, text != null ? text : "");
 			}
 			nextTextX += table.getColumns().get(from++).getWidth();
