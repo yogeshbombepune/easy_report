@@ -1,9 +1,7 @@
 package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.model.*;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
@@ -84,10 +82,7 @@ public interface ReportPdf {
 
 	static PDFont loadFont(PDDocument document) throws Exception {
 		try {
-			PDFont font = PDType0Font.load(document, font_file);
-			PDResources res = new PDResources();
-			COSName add = res.add(font);
-			return font;
+			return PDType0Font.load(document, font_file);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new IOException();

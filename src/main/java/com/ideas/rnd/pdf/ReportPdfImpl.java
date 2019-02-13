@@ -21,6 +21,7 @@ public class ReportPdfImpl implements ReportPdf {
 		Table table = getTable(columnConfiguration, populateData);
 
 		try (PDDocument doc = new PDDocument()) {
+
 			PDFont pdFont = ReportPdf.loadFont(doc);
 
 			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc, pdFont, headerConfiguration(),
@@ -95,7 +96,7 @@ public class ReportPdfImpl implements ReportPdf {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().name("FirstName1|FirstName2|FirstName3").width(50).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("LastName").width(50).alignment(Alignment.CENTER).build());
-		columns.add(Column.builder().name("电子邮件").width(150).alignment(Alignment.CENTER).build());
+		columns.add(Column.builder().name("Email").width(150).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("ZipCode").width(43).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("MailOptIn").width(50).alignment(Alignment.CENTER).build());
 		columns.add(Column.builder().name("Code").width(80).alignment(Alignment.CENTER).build());
