@@ -1,10 +1,19 @@
 package com.ideas.rnd.pdf.model;
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
+import java.awt.*;
 import java.util.List;
 
+@Data
+@Builder
+@ToString
+@EqualsAndHashCode
 public class Table {
 	// Table attributes
 	private float margin;
@@ -12,71 +21,32 @@ public class Table {
 	private PDRectangle pageSize;
 	private boolean isLandscape;
 	private float rowHeight;
-	private float rowWidth;
+	private float columnHeight;
+	private boolean columnWordWrapEnable;
+	private boolean columnSplitEnable;
+	private String splitRegex;
+	private float lineWidth;
+	private Color lineColor;
 
 	// font attributes
-	private PDFont textFont;
-	private float fontSize;
+	private PDFont contentTextFont;
+	private PDFont headerTextFont;
+
+	private float contentFontSize;
+	private float headerFontSize;
+	private Color headerTextColor;
+	private Color contentTextColor;
+	private Color headerBackgroundColor;
 
 	// Content attributes
 	private Integer numberOfRows;
 	private List<Column> columns;
-	private String[][] content;
-	private float cellMargin;
-
-	public Table() {
-	}
+	private List<Range> fixedColumns;
+	private List<List<String>> content;
+	private float cellPadding;
 
 	public Integer getNumberOfColumns() {
-		return this.getColumns().size();
-	}
-
-	public float getWidth() {
-		float tableWidth = 0f;
-		for (Column column : columns) {
-			tableWidth += column.getWidth();
-		}
-		return tableWidth;
-	}
-
-	public float getMargin() {
-		return margin;
-	}
-
-	public void setMargin(float margin) {
-		this.margin = margin;
-	}
-
-	public PDRectangle getPageSize() {
-		return pageSize;
-	}
-
-	public void setPageSize(PDRectangle pageSize) {
-		this.pageSize = pageSize;
-	}
-
-	public PDFont getTextFont() {
-		return textFont;
-	}
-
-	public void setTextFont(PDFont textFont) {
-		this.textFont = textFont;
-	}
-
-	public float getFontSize() {
-		return fontSize;
-	}
-
-	public void setFontSize(float fontSize) {
-		this.fontSize = fontSize;
-	}
-
-	public String[] getColumnsNamesAsArray() {
-		String[] columnNames = new String[getNumberOfColumns()];
-		for (int i = 0; i < getNumberOfColumns(); i++) {
-			columnNames[i] = columns.get(i).getName();
-		}
-		return columnNames;
+		return null != this.getColumns() ? this.getColumns().size() : 0;
 	}
 
 	public String[] getColumnsNamesAsArray(List<Column> expColumns) {
@@ -85,69 +55,5 @@ public class Table {
 			columnNames[i] = expColumns.get(i).getName();
 		}
 		return columnNames;
-	}
-
-	public List<Column> getColumns() {
-		return columns;
-	}
-
-	public void setColumns(List<Column> columns) {
-		this.columns = columns;
-	}
-
-	public Integer getNumberOfRows() {
-		return numberOfRows;
-	}
-
-	public void setNumberOfRows(Integer numberOfRows) {
-		this.numberOfRows = numberOfRows;
-	}
-
-	public float getHeight() {
-		return height;
-	}
-
-	public void setHeight(float height) {
-		this.height = height;
-	}
-
-	public float getRowHeight() {
-		return rowHeight;
-	}
-
-	public void setRowHeight(float rowHeight) {
-		this.rowHeight = rowHeight;
-	}
-
-	public String[][] getContent() {
-		return content;
-	}
-
-	public void setContent(String[][] content) {
-		this.content = content;
-	}
-
-	public float getCellMargin() {
-		return cellMargin;
-	}
-
-	public void setCellMargin(float cellMargin) {
-		this.cellMargin = cellMargin;
-	}
-
-	public boolean isLandscape() {
-		return isLandscape;
-	}
-
-	public void setLandscape(boolean isLandscape) {
-		this.isLandscape = isLandscape;
-	}
-
-	public float getRowWidth() {
-		return rowWidth;
-	}
-
-	public void setRowWidth(float rowWidth) {
-		this.rowWidth = rowWidth;
 	}
 }

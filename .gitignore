@@ -11,7 +11,7 @@
 .sts4-cache
 
 ### IntelliJ IDEA ###
-idea/
+.idea/*
 *.iws
 *.iml
 *.ipr
@@ -23,3 +23,10 @@ idea/
 /dist/
 /nbdist/
 /.nb-gradle/
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/libraries/
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+.idea/vcs.xml

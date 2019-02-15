@@ -7,7 +7,10 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
+@Builder
 public class Column {
 	private String name;
 	private float width;
+	private Alignment headerAlignment;
+	private Alignment contentAlignment;
 }

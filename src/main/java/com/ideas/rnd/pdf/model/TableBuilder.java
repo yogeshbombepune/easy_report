@@ -1,15 +1,25 @@
 package com.ideas.rnd.pdf.model;
 
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-
-import java.util.List;
-
 public class TableBuilder {
-	private Table table = new Table();
+	/*private Table table = new Table();
+
+	public TableBuilder setColumnHeight(float columnHeight) {
+		table.setColumnHeight(columnHeight);
+		return this;
+	}
 
 	public TableBuilder setHeight(float height) {
 		table.setHeight(height);
+		return this;
+	}
+
+	public TableBuilder setTopMargin(float topMargin) {
+		table.setTopMargin(topMargin);
+		return this;
+	}
+
+	public TableBuilder setFixedColumns(List<Range> fixedColumns) {
+		table.setFixedColumns(fixedColumns);
 		return this;
 	}
 
@@ -53,13 +63,23 @@ public class TableBuilder {
 		return this;
 	}
 
-	public TableBuilder setTextFont(PDFont textFont) {
-		table.setTextFont(textFont);
+	public TableBuilder setContentTextFont(PDFont textFont) {
+		table.setContentTextFont(textFont);
 		return this;
 	}
 
-	public TableBuilder setFontSize(float fontSize) {
-		table.setFontSize(fontSize);
+	public TableBuilder setContentFontSize(float fontSize) {
+		table.setContentFontSize(fontSize);
+		return this;
+	}
+
+	public TableBuilder setHeaderTextFont(PDFont textFont) {
+		table.setHeaderTextFont(textFont);
+		return this;
+	}
+
+	public TableBuilder setHeaderFontSize(float fontSize) {
+		table.setHeaderFontSize(fontSize);
 		return this;
 	}
 
@@ -71,4 +91,6 @@ public class TableBuilder {
 	public Table build() {
 		return table;
 	}
+
+*/
 }
