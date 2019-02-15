@@ -1,7 +1,7 @@
-package com.ideas.rnd.pdf;
+package com.ideas.rnd.report.example.pdf;
 
-import com.ideas.rnd.pdf.algo.PdfReportGenerator;
-import com.ideas.rnd.pdf.model.*;
+import com.ideas.rnd.report.algo.PdfReportGenerator;
+import com.ideas.rnd.report.model.pdf.*;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -22,7 +22,7 @@ public class ReportPdfImpl implements ReportPdf {
 		Table table = getTable(columnConfiguration, populateData);
 
 		PDDocument doc2 = new PDDocument();
-		File temp = File.createTempFile("temp-file-name", ".pdf");
+		File temp = File.createTempFile("temp-file-name", ".report");
 		doc2.save(temp.getAbsoluteFile());
 
 		System.out.println(temp.getAbsoluteFile());

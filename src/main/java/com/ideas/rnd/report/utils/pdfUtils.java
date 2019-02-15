@@ -1,7 +1,5 @@
-package com.ideas.rnd.pdf.utils;
+package com.ideas.rnd.report.utils;
 
-
-import java.lang.reflect.Array;
 
 public class pdfUtils {
 

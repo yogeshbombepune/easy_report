@@ -1,6 +1,6 @@
-package com.ideas.rnd.pdf.algo;
+package com.ideas.rnd.report.algo;
 
-import com.ideas.rnd.pdf.model.*;
+import com.ideas.rnd.report.model.pdf.*;
 import org.apache.commons.text.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;

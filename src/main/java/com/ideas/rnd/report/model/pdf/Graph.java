@@ -1,4 +1,4 @@
-package com.ideas.rnd.pdf.model;
+package com.ideas.rnd.report.model.pdf;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

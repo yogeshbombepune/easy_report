@@ -1,6 +1,6 @@
-package com.ideas.rnd.pdf;
+package com.ideas.rnd.report.example.pdf;
 
-import com.ideas.rnd.pdf.model.*;
+import com.ideas.rnd.report.model.pdf.*;
 import org.apache.fontbox.ttf.TTFParser;
 import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -96,7 +96,6 @@ public interface ReportPdf {
 	void export(String fileName) throws Exception;
 
 	Header headerConfiguration();
-
 
 	List<Column> columnConfiguration();
 
