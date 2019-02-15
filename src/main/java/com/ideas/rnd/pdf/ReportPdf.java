@@ -1,6 +1,8 @@
 package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.model.*;
+import org.apache.fontbox.ttf.TTFParser;
+import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -82,7 +84,9 @@ public interface ReportPdf {
 
 	static PDFont loadFont(PDDocument document) throws Exception {
 		try {
-			return PDType0Font.load(document, font_file);
+			TrueTypeFont ttf = new TTFParser().parse(font_file);
+			PDType0Font.load(document, font_file);
+			return PDType0Font.load(document, ttf, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new IOException();
@@ -92,6 +96,7 @@ public interface ReportPdf {
 	void export(String fileName) throws Exception;
 
 	Header headerConfiguration();
+
 
 	List<Column> columnConfiguration();
 

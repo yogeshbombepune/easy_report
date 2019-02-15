@@ -34,6 +34,7 @@ public class PdfReportGenerator {
 	/**
 	 * Used for restrict to create object using No arg Constructor.
 	 */
+	@SuppressWarnings("unused")
 	private PdfReportGenerator() {
 	}
 
@@ -130,7 +131,6 @@ public class PdfReportGenerator {
 	/**
 	 * Used to draw graphs
 	 *
-	 *
 	 * @throws IOException
 	 */
 	private void addGraphs() throws IOException {
@@ -141,7 +141,6 @@ public class PdfReportGenerator {
 	}
 
 	/**
-	 *
 	 * @param totalHeightForGraph
 	 * @param totalWidthForGraph
 	 * @param tableTopY
@@ -307,39 +306,77 @@ public class PdfReportGenerator {
 	 * @throws IOException
 	 */
 	private void drawTable() throws IOException {
-		// Calculate pagination
-		Integer rowsPerPage;
 		int numberOfPages;
-		float pageWidth = this.tableWidth;
-		float totalRowWidth = table.getRowWidth();
-		rowsPerPage = getRowsPerPage();
-		List<List<Range>> rangesOfColumnRangePerPage;
-		numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
+		List<List<Range>> rangesOfColumnRangePerPage = null;
+		// Check Fixed Column
+		boolean isFixedColumn = isFixedColumn();
+		// Calculate pagination
+		Integer rowsPerPage = getRowsPerPage();
+		if (null != this.table.getColumns() &&
+				this.table.getColumns().size() > 0 &&
+				null != table.getContent() &&
+				table.getContent().size() > 0) {
+			rangesOfColumnRangePerPage = getRanges(isFixedColumn);
+			numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
+		} else {
+			numberOfPages = 1;
+		}
+		calculatePageCountForFooter(numberOfPages, null != rangesOfColumnRangePerPage ? rangesOfColumnRangePerPage.size() : 1);
+		renderPages(numberOfPages, rangesOfColumnRangePerPage, isFixedColumn, rowsPerPage);
+	}
 
-		List<Range> fixedColumns = table.getFixedColumns();
-		boolean isFixedColumn = fixedColumns != null && fixedColumns.size() > 0;
-		if (pageWidth < totalRowWidth) {
+	private List<List<Range>> getRanges(boolean isFixedColumn) {
+		List<List<Range>> rangesOfColumnRangePerPage;
+		float totalRequiredWidth = (float) table.getColumns().stream().mapToDouble(Column::getWidth).sum();
+		if (this.tableWidth < totalRequiredWidth) {
 			rangesOfColumnRangePerPage = getRangesOfColumnRangePerPageNew(isFixedColumn);
 		} else {
 			rangesOfColumnRangePerPage = getSinglePageRange();
 		}
-		calculatePageCountForFooter(numberOfPages, rangesOfColumnRangePerPage);
+		return rangesOfColumnRangePerPage;
+	}
+
+	private void renderPages(int numberOfPages, List<List<Range>> rangesOfColumnRangePerPage, boolean isFixedColumn, Integer rowsPerPage) throws IOException {
 		// Generate each page, get the content and draw it
 		for (int pageCount = 0; pageCount < numberOfPages; pageCount++) {
-			for (List<Range> range : rangesOfColumnRangePerPage) {
-				PDPage page = generatePage();
-				PDPageContentStream contentStream = generateContentStream(page);
-				addHeader(contentStream);
-				List<List<String>> currentPageContent = getContentForCurrentPage(rowsPerPage, pageCount, range);
-				drawCurrentPage(currentPageContent, contentStream, range, isFixedColumn);
-				printFooter(doc, contentStream);
-				contentStream.close();
+			if (null != this.table.getColumns() &&
+					this.table.getColumns().size() > 0 &&
+					null != rangesOfColumnRangePerPage &&
+					rangesOfColumnRangePerPage.size() > 0) {
+				renderTable(rangesOfColumnRangePerPage, isFixedColumn, rowsPerPage, pageCount);
+			} else {
+				generateBlankPageWithOnlyHeaderAndFooter();
 			}
 		}
 	}
 
-	private void calculatePageCountForFooter(int numberOfPages, List<List<Range>> rangesOfColumnRangePerPage) {
-		this.totalNumberOfPages = numberOfPages * rangesOfColumnRangePerPage.size();
+	private void renderTable(List<List<Range>> rangesOfColumnRangePerPage, boolean isFixedColumn, Integer rowsPerPage, int pageCount) throws IOException {
+		for (List<Range> range : rangesOfColumnRangePerPage) {
+			PDPage page = generatePage();
+			PDPageContentStream contentStream = generateContentStream(page);
+			addHeader(contentStream);
+			List<List<String>> currentPageContent = getContentForCurrentPage(rowsPerPage, pageCount, range);
+			drawCurrentPage(currentPageContent, contentStream, range, isFixedColumn);
+			printFooter(doc, contentStream);
+			contentStream.close();
+		}
+	}
+
+	private void generateBlankPageWithOnlyHeaderAndFooter() throws IOException {
+		PDPage page = generatePage();
+		PDPageContentStream contentStream = generateContentStream(page);
+		addHeader(contentStream);
+		printFooter(doc, contentStream);
+		contentStream.close();
+	}
+
+	private boolean isFixedColumn() {
+		return table.getFixedColumns() != null && table.getFixedColumns().size() > 0;
+	}
+
+
+	private void calculatePageCountForFooter(int numberOfPages, int ranges) {
+		this.totalNumberOfPages = numberOfPages * ranges;
 		if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
 			this.totalNumberOfPages += this.graph.getGraphs().size();
 		}
@@ -675,9 +712,9 @@ public class PdfReportGenerator {
 		}
 		List<List<String>> content = table.getContent();
 		for (int i = startRange; i < endRange; i++) {
-			List<String> commonDataChunk = new ArrayList<String>(content.get(i).subList(ranges.get(0).getFrom(), ranges.get(0).getTo() + 1));
+			List<String> commonDataChunk = new ArrayList<>(content.get(i).subList(ranges.get(0).getFrom(), ranges.get(0).getTo() + 1));
 			if (ranges.size() > 1) {
-				List<String> variableChunkOfData = new ArrayList<String>(content.get(i).subList(ranges.get(1).getFrom(), ranges.get(1).getTo() + 1));
+				List<String> variableChunkOfData = new ArrayList<>(content.get(i).subList(ranges.get(1).getFrom(), ranges.get(1).getTo() + 1));
 				commonDataChunk.addAll(variableChunkOfData);
 			}
 			newContentList.add(commonDataChunk);
@@ -687,7 +724,6 @@ public class PdfReportGenerator {
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	private PDPage generatePage() {
@@ -699,7 +735,6 @@ public class PdfReportGenerator {
 	}
 
 	/**
-	 *
 	 * @param page
 	 * @return
 	 * @throws IOException

@@ -2,6 +2,7 @@ package com.ideas.rnd.pdf;
 
 import com.ideas.rnd.pdf.algo.PdfReportGenerator;
 import com.ideas.rnd.pdf.model.*;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
@@ -20,30 +21,30 @@ public class ReportPdfImpl implements ReportPdf {
 
 		Table table = getTable(columnConfiguration, populateData);
 
-		try (PDDocument doc = new PDDocument()) {
+		PDDocument doc2 = new PDDocument();
+		File temp = File.createTempFile("temp-file-name", ".pdf");
+		doc2.save(temp.getAbsoluteFile());
 
-			PDFont pdFont = ReportPdf.loadFont(doc);
-
-			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc, pdFont, headerConfiguration(),
+		System.out.println(temp.getAbsoluteFile());
+		try (PDDocument doc1 = PDDocument.load(temp, MemoryUsageSetting.setupTempFileOnly(10240000))) {
+			PDFont pdFont = ReportPdf.loadFont(doc1);
+			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
 					footerConfiguration(), table, getGraphs());
-
 			pdfReportGenerator.getPDF();
-
-			doc.save(fileName);
+			doc1.save(fileName);
+			//temp.deleteOnExit();
 		}
 
 	}
 
 	private Table getTable(List<Column> columns, List<List<String>> content) {
-		float totalRowWidth = (float) columns.stream().mapToDouble(Column::getWidth).sum();
 		return Table.builder()
 				.cellPadding(TABLE_CELL_PADDING)
 				.columns(columns)
 				.columnHeight(TABLE_COLUMN_HEIGHT * 3)
 				.fixedColumns(fixedColumnRangeConfiguration())
 				.content(content)
-				.rowWidth(totalRowWidth)
-				.numberOfRows(content.size())
+				.numberOfRows(null != content ? content.size() : 0)
 				.rowHeight(TABLE_ROW_HEIGHT)
 				.margin(MARGIN)
 				.pageSize(PAGE_SIZE)

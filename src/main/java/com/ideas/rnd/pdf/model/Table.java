@@ -21,7 +21,6 @@ public class Table {
 	private PDRectangle pageSize;
 	private boolean isLandscape;
 	private float rowHeight;
-	private float rowWidth;
 	private float columnHeight;
 	private boolean columnWordWrapEnable;
 	private boolean columnSplitEnable;
@@ -47,7 +46,7 @@ public class Table {
 	private float cellPadding;
 
 	public Integer getNumberOfColumns() {
-		return this.getColumns().size();
+		return null != this.getColumns() ? this.getColumns().size() : 0;
 	}
 
 	public String[] getColumnsNamesAsArray(List<Column> expColumns) {
