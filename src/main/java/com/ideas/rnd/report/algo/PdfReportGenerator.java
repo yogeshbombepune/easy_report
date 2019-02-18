@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * @author Yogesh Bombe
  */
-public class PdfReportGenerator {
+public class PdfReportGenerator implements ReportGenerator {
 	private PDDocument doc;
 	private Table table;
 	private Header header;
@@ -110,7 +110,7 @@ public class PdfReportGenerator {
 	 *
 	 * @throws IOException
 	 */
-	public void getPDF() throws IOException {
+	public void generate() throws IOException {
 		drawTable();
 		addGraph();
 	}

@@ -1,0 +1,15 @@
+package com.ideas.rnd.report.model.excel;
+
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
+@Builder
+public class Cell {
+	private Object value;
+	private Font font;
+	private CellStyle cellStyle;
+}

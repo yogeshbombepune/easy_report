@@ -30,7 +30,7 @@ public class ReportPdfImpl implements ReportPdf {
 			PDFont pdFont = ReportPdf.loadFont(doc1);
 			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
 					footerConfiguration(), table, getGraphs());
-			pdfReportGenerator.getPDF();
+			pdfReportGenerator.generate();
 			doc1.save(fileName);
 			//temp.deleteOnExit();
 		}

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-public class CsvReportGenerator {
+public class CsvReportGenerator implements ReportGenerator {
 	//Delimiter used in CSV file
 	private static final String COMMA_DELIMITER = ",";
 	private static final String NEW_LINE_SEPARATOR = "\n";
@@ -23,11 +23,12 @@ public class CsvReportGenerator {
 		this.dataSet = dataSet;
 	}
 
-	public void generate() throws IOException {
+	public void generate() {
 		FileWriter fileWriter = null;
 
 		try {
 			fileWriter = new FileWriter(this.fileName);
+
 
 			//Write the CSV file header
 			fileWriter.append(String.join(COMMA_DELIMITER, this.fileHeader));
@@ -36,13 +37,14 @@ public class CsvReportGenerator {
 			fileWriter.append(NEW_LINE_SEPARATOR);
 
 			//Write a new object list to the CSV file
+			int columnSize = dataSet.get(0).size();
 			for (List<Object> rows : dataSet) {
 				int cellNumber = 0;
 				for (Object cell : rows) {
 					Object cellValue = evaluate(cell);
 					fileWriter.append((String) cellValue);
 					cellNumber++;
-					if (cellNumber == rows.size()) {
+					if (cellNumber == columnSize) {
 						fileWriter.append(NEW_LINE_SEPARATOR);
 					} else {
 						fileWriter.append(COMMA_DELIMITER);
