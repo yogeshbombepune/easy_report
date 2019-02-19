@@ -2,7 +2,10 @@ package com.ideas.rnd.report.example.excel;
 
 import com.ideas.rnd.report.algo.ExcelReportGenerator;
 import com.ideas.rnd.report.model.excel.Cell;
+import com.ideas.rnd.report.model.excel.CellStyle;
 import com.ideas.rnd.report.model.excel.Font;
+import com.ideas.rnd.report.model.excel.Span;
+import com.ideas.rnd.report.model.pdf.Alignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -31,10 +34,109 @@ public class ReportExcelImpl implements ReportExcel {
 	}
 
 	public List<List<Cell>> columnConfiguration() {
-		Cell[] columns = {Cell.builder().value("FirstName").font(Font.builder().bold(true).build()).build(), Cell.builder().value("LastName").font(Font.builder().bold(true).build()).build(), Cell.builder().value("Email").font(Font.builder().bold(true).build()).build(), Cell.builder().value("Pin Code").font(Font.builder().bold(true).build()).build(), Cell.builder().value("yes").font(Font.builder().bold(true).build()).build(), Cell.builder().value("column").font(Font.builder().bold(true).build()).build(), Cell.builder().value("column").font(Font.builder().bold(true).build()).build(), Cell.builder().value("column").font(Font.builder().bold(true).build()).build(), Cell.builder().value("column").font(Font.builder().bold(true).build()).build(), Cell.builder().value("Channel").font(Font.builder().bold(true).build()).build()};
-		List<Cell> cells = Arrays.asList(columns);
+		Cell[] headerLine1 = {
+				Cell.builder()
+						.value("DOW")
+						.cellStyle(CellStyle.builder()
+								.alignment(Alignment.CENTER)
+								.build())
+						.font(Font.builder()
+								.bold(true)
+								.build())
+						.span(Span.builder()
+								.firstCol(0)
+								.lastCol(0)
+								.firstRow(0)
+								.lastRow(2)
+								.build())
+						.build(),
+				Cell.builder()
+						.value("Date")
+						.cellStyle(CellStyle.builder()
+								.alignment(Alignment.CENTER)
+								.build())
+						.font(Font.builder()
+								.bold(true)
+								.build())
+						.span(Span.builder()
+								.firstCol(1)
+								.lastCol(1)
+								.firstRow(0)
+								.lastRow(2)
+								.build())
+						.build(),
+				Cell.builder()
+						.value("Room Sold")
+						.cellStyle(CellStyle.builder()
+								.alignment(Alignment.CENTER)
+								.build())
+						.span(Span.builder()
+								.firstCol(2)
+								.lastCol(3)
+								.firstRow(0)
+								.lastRow(0)
+								.build())
+						.font(Font.builder()
+								.bold(true)
+								.color((short) 2)
+								.build())
+						.build(),
+				Cell.builder().value("Pin Code").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("yes").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("column").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("column").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("column").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("column").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("Channel").font(Font.builder().bold(true).build()).build()
+		};
+		Cell[] headerLine2 = {
+				Cell.builder().value("").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("").font(Font.builder().bold(true).build()).build(),
+				Cell.builder()
+						.value("Total Hotel")
+						.cellStyle(CellStyle.builder()
+								.alignment(Alignment.CENTER)
+								.build())
+						.span(Span.builder()
+								.firstCol(2)
+								.lastCol(3)
+								.firstRow(1)
+								.lastRow(1)
+								.build())
+						.font(Font.builder()
+								.bold(true)
+								.color((short) 2)
+								.build())
+						.build()
+		};
+		Cell[] headerLine3 = {
+				Cell.builder().value("").font(Font.builder().bold(true).build()).build(),
+				Cell.builder().value("").font(Font.builder().bold(true).build()).build(),
+				Cell.builder()
+						.value("Analysis Period")
+						.cellStyle(CellStyle.builder()
+								.alignment(Alignment.CENTER)
+								.build())
+						.font(Font.builder()
+								.bold(true)
+								.color((short) 2)
+								.build())
+						.build(),
+				Cell.builder()
+						.value("Comparison Period")
+						.cellStyle(CellStyle.builder()
+								.alignment(Alignment.CENTER)
+								.build())
+						.font(Font.builder()
+								.bold(true)
+								.color((short) 2)
+								.build())
+						.build()
+		};
 		List<List<Cell>> lists = new ArrayList<>();
-		lists.add(cells);
+		lists.add(Arrays.asList(headerLine1));
+		lists.add(Arrays.asList(headerLine2));
+		lists.add(Arrays.asList(headerLine3));
 		return lists;
 	}
 

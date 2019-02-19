@@ -8,9 +8,6 @@ import lombok.*;
 @ToString
 @EqualsAndHashCode
 @Builder
-public class Cell {
-	private Object value;
-	private Font font;
-	private CellStyle cellStyle;
-	private Span span;
+public class Span {
+	Integer firstRow, lastRow, firstCol, lastCol;
 }

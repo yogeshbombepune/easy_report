@@ -2,6 +2,7 @@ package com.ideas.rnd.report.algo;
 
 import com.ideas.rnd.report.model.excel.Cell;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.List;
 
 public class ExcelReportGenerator implements ReportGenerator {
 	private Workbook workbook;
+	private Sheet sheet;
 	private List<List<Cell>> columns;
 	private List<List<Cell>> dataSet;
 	private int rowNumber = 0;
@@ -24,18 +26,23 @@ public class ExcelReportGenerator implements ReportGenerator {
 
 	@Override
 	public void generate() {
+		createSheet();
+		writeDataOnSheet();
+	}
+
+	private void createSheet() {
 		Sheet sheet = this.workbook.createSheet();
-		writeDataOnSheet(sheet);
+		this.sheet = sheet;
 	}
 
-	private void writeDataOnSheet(Sheet sheet) {
-		writeHeader(sheet);
-		writeData(sheet);
+	private void writeDataOnSheet() {
+		writeHeader();
+		writeData();
 	}
 
-	private void writeData(Sheet sheet) {
+	private void writeData() {
 		for (List<Cell> cells : this.dataSet) {
-			Row headerRow = createRowObject(sheet);
+			Row headerRow = createRowObject();
 			int cellNumber = 0;
 			writeRow(cells, headerRow, cellNumber);
 		}
@@ -49,13 +56,13 @@ public class ExcelReportGenerator implements ReportGenerator {
 		}
 	}
 
-	private Row createRowObject(Sheet sheet) {
-		return sheet.createRow(this.rowNumber++);
+	private Row createRowObject() {
+		return this.sheet.createRow(this.rowNumber++);
 	}
 
-	private void writeHeader(Sheet sheet) {
+	private void writeHeader() {
 		for (List<Cell> cells : this.columns) {
-			Row headerRow = createRowObject(sheet);
+			Row headerRow = createRowObject();
 			int cellNumber = 0;
 			writeRow(cells, headerRow, cellNumber);
 		}
@@ -171,6 +178,11 @@ public class ExcelReportGenerator implements ReportGenerator {
 		if (null != cell.getCellStyle() && null != cell.getCellStyle().getFillForegroundColor()) {
 			cellStyle.setFillForegroundColor(cell.getCellStyle().getFillForegroundColor());
 		}
+
+		if (null != cell.getSpan()) {
+			this.sheet.addMergedRegion(new CellRangeAddress(cell.getSpan().getFirstRow(), cell.getSpan().getLastRow(), cell.getSpan().getFirstCol(), cell.getSpan().getLastCol()));
+		}
+
 	}
 
 
