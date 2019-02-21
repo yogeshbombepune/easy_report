@@ -134,28 +134,28 @@ public class PdfReportGenerator implements ReportGenerator {
 	 * @throws IOException
 	 */
 	private void addGraphs() throws IOException {
-		float tableTopY = this.tableHeight;
 		for (File graphFile : this.graph.getGraphs()) {
-			drawGraph(this.tableHeight, this.tableWidth, tableTopY, graphFile);
+			drawGraph(this.tableHeight, this.tableWidth, graphFile);
 		}
 	}
 
 	/**
 	 * @param totalHeightForGraph
 	 * @param totalWidthForGraph
-	 * @param tableTopY
 	 * @param graphFile
 	 * @throws IOException
 	 */
-	private void drawGraph(final float totalHeightForGraph, final float totalWidthForGraph, float tableTopY, File graphFile) throws IOException {
+	private void drawGraph(final float totalHeightForGraph, final float totalWidthForGraph, File graphFile) throws IOException {
 		PDPage page = generatePage();
 		PDPageContentStream contentStream = generateContentStream(page);
 		addHeader(contentStream);
 		PDImageXObject pdImage = PDImageXObject.createFromFileByExtension(graphFile, doc);
-		float height = getGraphAdjustmentScale(totalHeightForGraph, pdImage.getHeight());
+		int adjustment = 10;
+		float height = getGraphAdjustmentScale(totalHeightForGraph - table.getMargin() - adjustment, pdImage.getHeight());
 		float width = getGraphAdjustmentScale(totalWidthForGraph, pdImage.getWidth());
-		tableTopY -= height;
-		contentStream.drawImage(pdImage, table.getPageSize().getLowerLeftX() + table.getMargin(), tableTopY, width, height);
+		float x = (totalWidthForGraph / 2) - (width / 2) + this.table.getMargin();
+		float y = ((totalHeightForGraph + table.getMargin() + adjustment) / 2) - (height / 2);
+		contentStream.drawImage(pdImage, x, y, width, height);
 		printFooter(doc, contentStream);
 		contentStream.close();
 	}

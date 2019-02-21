@@ -88,6 +88,14 @@ public class ReportPdfImpl implements ReportPdf {
 		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
 		headerMap.put("Start Date:", "Sun 29-Jun-2014");
 		headerMap.put("End Date:", "Tue 29-Jun-2014");
+		headerMap.put("Printed By1:", "ideas_adm");
+		headerMap.put("Print Date1: ", "Fri 02-Nov-2018 15:00");
+		headerMap.put("Start Date1:", "Sun 29-Jun-2014");
+		headerMap.put("End Date1:", "Tue 29-Jun-2014");
+		headerMap.put("Printed By2:", "ideas_adm");
+		headerMap.put("Print Date2: ", "Fri 02-Nov-2018 15:00");
+		headerMap.put("Start Date2:", "Sun 29-Jun-2014");
+		headerMap.put("End Date2:", "Tue 29-Jun-2014");
 		headerMap.put("Legend:", "(*) Indicates an active Hotel Forecast Override on this date");
 		return headerMap;
 	}
@@ -183,11 +191,29 @@ public class ReportPdfImpl implements ReportPdf {
 	public Graph getGraphs() {
 		URL resource1 = ReportPdfImpl.class.getClassLoader().getResource("images/graph1.jpg");
 		URL resource2 = ReportPdfImpl.class.getClassLoader().getResource("images/graph2.png");
+		URL resource3 = ReportPdfImpl.class.getClassLoader().getResource("images/graph3.png");
+		URL resource4 = ReportPdfImpl.class.getClassLoader().getResource("images/graph4.png");
+		URL resource5 = ReportPdfImpl.class.getClassLoader().getResource("images/graph5.png");
+		URL resource6 = ReportPdfImpl.class.getClassLoader().getResource("images/graph6.png");
+		URL resource7 = ReportPdfImpl.class.getClassLoader().getResource("images/graph7.png");
+		URL resource8 = ReportPdfImpl.class.getClassLoader().getResource("images/graph8.png");
+		URL resource9 = ReportPdfImpl.class.getClassLoader().getResource("images/graph9.png");
+		URL resource10 = ReportPdfImpl.class.getClassLoader().getResource("images/graph10.PNG");
+		URL resource11 = ReportPdfImpl.class.getClassLoader().getResource("images/graph11.png");
+		URL resource12 = ReportPdfImpl.class.getClassLoader().getResource("images/graph12.png");
 		List<File> graphs = new ArrayList<>();
-		assert resource1 != null;
 		graphs.add(new File(resource1.getPath()));
-		assert resource2 != null;
 		graphs.add(new File(resource2.getPath()));
+		graphs.add(new File(resource3.getPath()));
+		graphs.add(new File(resource4.getPath()));
+		graphs.add(new File(resource5.getPath()));
+		graphs.add(new File(resource6.getPath()));
+		graphs.add(new File(resource7.getPath()));
+		graphs.add(new File(resource8.getPath()));
+		graphs.add(new File(resource9.getPath()));
+		graphs.add(new File(resource10.getPath()));
+		graphs.add(new File(resource11.getPath()));
+		graphs.add(new File(resource12.getPath()));
 		return new Graph(graphs);
 	}
 }

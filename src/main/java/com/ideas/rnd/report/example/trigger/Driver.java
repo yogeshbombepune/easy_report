@@ -9,7 +9,7 @@ import com.ideas.rnd.report.example.pdf.ReportPdfImpl;
 
 public class Driver {
 
-	public static void main1(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
 		ReportPdf reportPdf = new ReportPdfImpl();
 		reportPdf.export("result.pdf");
 	}
@@ -19,7 +19,7 @@ public class Driver {
 		reportCsv.export("result.csv");
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main1(String[] args) throws Exception {
 		ReportExcel reportExcel = new ReportExcelImpl();
 		reportExcel.export("result.xlsx");
 	}
