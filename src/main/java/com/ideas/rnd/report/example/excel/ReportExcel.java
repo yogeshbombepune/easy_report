@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ReportExcel {
 
-	void export(String fileName) throws IOException;
+	void export(String fileName) throws IOException, InterruptedException;
 
 	List<List<Cell>> populateData();
 }

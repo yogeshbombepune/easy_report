@@ -30,6 +30,7 @@ public class PdfReportGenerator implements ReportGenerator {
 	private int currentPageNumber = 0;
 	private int totalNumberOfPages;
 	private PDFont font;
+	private int wrapLineAdjustment;
 
 	/**
 	 * Used for restrict to create object using No arg Constructor.
@@ -44,13 +45,13 @@ public class PdfReportGenerator implements ReportGenerator {
 	 * @param footer
 	 * @param table
 	 */
-	public PdfReportGenerator(PDDocument doc, Header header, Footer footer, Table table) {
+	public PdfReportGenerator(PDDocument doc, Header header, Footer footer, Table table) throws IOException {
 		this.doc = doc;
 		this.table = table;
 		this.header = header;
 		this.footer = footer;
-		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
+		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 	}
 
 	/**
@@ -60,14 +61,14 @@ public class PdfReportGenerator implements ReportGenerator {
 	 * @param footer
 	 * @param table
 	 */
-	public PdfReportGenerator(PDDocument doc, PDFont font, Header header, Footer footer, Table table) {
+	public PdfReportGenerator(PDDocument doc, PDFont font, Header header, Footer footer, Table table) throws IOException {
 		this.doc = doc;
 		this.font = font;
 		this.table = table;
 		this.header = header;
 		this.footer = footer;
-		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
+		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 	}
 
 	/**
@@ -78,15 +79,15 @@ public class PdfReportGenerator implements ReportGenerator {
 	 * @param table
 	 * @param graph
 	 */
-	public PdfReportGenerator(PDDocument doc, PDFont font, Header header, Footer footer, Table table, Graph graph) {
+	public PdfReportGenerator(PDDocument doc, PDFont font, Header header, Footer footer, Table table, Graph graph) throws IOException {
 		this.doc = doc;
 		this.header = header;
 		this.footer = footer;
 		this.font = font;
 		this.table = table;
 		this.graph = graph;
-		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
+		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 	}
 
 	/**
@@ -95,14 +96,14 @@ public class PdfReportGenerator implements ReportGenerator {
 	 * @param table
 	 * @param graph
 	 */
-	public PdfReportGenerator(PDDocument doc, Header header, Footer footer, Table table, Graph graph) {
+	public PdfReportGenerator(PDDocument doc, Header header, Footer footer, Table table, Graph graph) throws IOException {
 		this.doc = doc;
 		this.header = header;
 		this.footer = footer;
 		this.table = table;
 		this.graph = graph;
-		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 		this.tableWidth = table.isLandscape() ? table.getPageSize().getHeight() - (table.getMargin() * 2) : table.getPageSize().getWidth() - (table.getMargin() * 2);
+		this.tableHeight = table.isLandscape() ? table.getPageSize().getWidth() - (table.getMargin()) - getHeaderHeight() : table.getPageSize().getHeight() - (table.getMargin()) - getHeaderHeight();
 	}
 
 	/**
@@ -124,8 +125,35 @@ public class PdfReportGenerator implements ReportGenerator {
 	/**
 	 * @return calculated height required for header section.
 	 */
-	private float getHeaderHeight() {
-		return (float) (Math.ceil(this.header.getMetaKeyVal().size() / 2.00f) + 2) * this.table.getRowHeight();
+	private float getHeaderHeight() throws IOException {
+		evaluateHeaderHeight();
+		return (float) (this.wrapLineAdjustment + 1.5) * this.table.getRowHeight();
+	}
+
+	private void evaluateHeaderHeight() throws IOException {
+		int flag = 0;
+		float numberOfLinesRequire = 0;
+		for (Map.Entry<String, Object> entry : this.header.getMetaKeyVal().entrySet()) {
+			Object value = entry.getValue();
+			int textWidth = getTextWidth(header.getMetaKeyValFont(), null != value ? value.toString() : "", header.getMetaKeyValFontSize());
+			float cellWidth = this.tableWidth / 4;
+			int numberOfColumns;
+			if (flag % 2 == 0) {
+				numberOfColumns = 3;
+			} else {
+				numberOfColumns = 1;
+			}
+			if (textWidth > (cellWidth * numberOfColumns)) {
+				int characterPerLine = (int) ((cellWidth * numberOfColumns) * entry.getValue().toString().length()) / textWidth;
+				String[] columnName = WordUtils.wrap(entry.getValue().toString(), characterPerLine).split("\\r?\\n");
+				numberOfLinesRequire += columnName.length;
+			} else {
+				numberOfLinesRequire += 0.50f;
+			}
+			flag++;
+		}
+		this.wrapLineAdjustment = (int) Math.ceil(numberOfLinesRequire);
+
 	}
 
 	/**
@@ -135,7 +163,9 @@ public class PdfReportGenerator implements ReportGenerator {
 	 */
 	private void addGraphs() throws IOException {
 		for (File graphFile : this.graph.getGraphs()) {
-			drawGraph(this.tableHeight, this.tableWidth, graphFile);
+			if (graphFile.exists()) {
+				drawGraph(this.tableHeight, this.tableWidth, graphFile);
+			}
 		}
 	}
 
@@ -185,12 +215,9 @@ public class PdfReportGenerator implements ReportGenerator {
 		float totalWidth = this.tableWidth;
 		float cellWidth = totalWidth / 4;
 		float pageTopY = table.isLandscape() ? table.getPageSize().getWidth() - table.getMargin() : table.getPageSize().getHeight() - table.getMargin();
-
-		int line = getNumberOfHeaderLine();
-		float heightForHeaderBackground = line * table.getRowHeight();
+		float heightForHeaderBackground = (this.wrapLineAdjustment - 1) * table.getRowHeight();
 		int fixedLine = 2;
-		drawCellBackground(contentStream, table.getMargin(), pageTopY - 3 - (table.getRowHeight() * (line + fixedLine)), totalWidth, heightForHeaderBackground, Color.LIGHT_GRAY);
-
+		drawCellBackground(contentStream, table.getMargin(), pageTopY - 3 - (table.getRowHeight() * (fixedLine + this.wrapLineAdjustment - 1)), totalWidth, heightForHeaderBackground, Color.LIGHT_GRAY);
 		float nextY = pageTopY;
 		writeHeadingOne(contentStream, nextY);
 		nextY -= table.getRowHeight();
@@ -216,7 +243,18 @@ public class PdfReportGenerator implements ReportGenerator {
 
 			xPos += cellWidth;
 
-			writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, entry.getValue().toString());
+			int textWidth = getTextWidth(header.getMetaKeyValFont(), null != entry.getValue() ? entry.getValue().toString() : "", header.getMetaKeyValFontSize());
+
+			if (textWidth > cellWidth * 3) {
+				int characterPerLine = (int) ((cellWidth * 3) * entry.getValue().toString().length()) / textWidth;
+				String[] columnName = WordUtils.wrap(entry.getValue().toString(), characterPerLine).split("\\r?\\n");
+				for (int j = 0; j < columnName.length; j++) {
+					writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, columnName[j]);
+					nextY -= table.getRowHeight();
+				}
+			} else {
+				writeText(contentStream, header.getMetaKeyValColor(), header.getMetaKeyValFont(), header.getMetaKeyValFontSize(), nextY, xPos, null != entry.getValue() ? entry.getValue().toString() : "");
+			}
 
 			xPos += cellWidth;
 
@@ -226,13 +264,6 @@ public class PdfReportGenerator implements ReportGenerator {
 			}
 			flag++;
 		}
-	}
-
-	/**
-	 * @return
-	 */
-	private int getNumberOfHeaderLine() {
-		return (int) Math.ceil((float) (this.header.getMetaKeyVal().size() - 2) / 2);
 	}
 
 	/**
@@ -807,7 +838,7 @@ public class PdfReportGenerator implements ReportGenerator {
 			contentStream.setFont(textFont, fontSize);
 		}
 		contentStream.newLineAtOffset(x, y);
-		contentStream.showText(text);
+		contentStream.showText(null != text ? text : "");
 		contentStream.endText();
 	}
 

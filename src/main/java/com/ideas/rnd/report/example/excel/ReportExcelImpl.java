@@ -6,9 +6,11 @@ import com.ideas.rnd.report.model.excel.CellStyle;
 import com.ideas.rnd.report.model.excel.Font;
 import com.ideas.rnd.report.model.excel.Span;
 import com.ideas.rnd.report.model.pdf.Alignment;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,12 +19,13 @@ import java.util.*;
 public class ReportExcelImpl implements ReportExcel {
 
 	@Override
-	public void export(String fileName) throws IOException {
+	public void export(String fileName) throws IOException, InterruptedException {
 		Map dataMap = new LinkedHashMap();
 		List<List<Cell>> columns = columnConfiguration();
 		List<List<Cell>> dataSet = populateData();
+		String imagePath = getImagePath();
 		Workbook workbook = new XSSFWorkbook();
-		ExcelReportGenerator excelReportGenerator = new ExcelReportGenerator(workbook, columns, dataSet);
+		ExcelReportGenerator excelReportGenerator = new ExcelReportGenerator(workbook, columns, dataSet, imagePath);
 		excelReportGenerator.generate();
 		OutputStream fileOut;
 		if (dataMap.containsKey("outputStream")) {
@@ -31,6 +34,31 @@ public class ReportExcelImpl implements ReportExcel {
 			fileOut = new FileOutputStream(fileName);
 		}
 		workbook.write(fileOut);
+		//FileUtils.deleteQuietly(new File(imagePath));
+	}
+
+	private String getImagePath() throws IOException, InterruptedException {
+		String basePath = "C:\\Users\\idnyob\\Desktop\\d3";
+		String chartHtmlName = basePath + File.separator + "index.html";
+		String chartImageName = basePath + File.separator + "images" + File.separator + RandomStringUtils.random(10, true, true) + new Date().getTime() + ".png";
+		String command = basePath + File.separator + "wkhtmltoimage-0.12.5-1 --javascript-delay 1000 " + chartHtmlName + " " + chartImageName;
+		Runtime.getRuntime().exec(command);
+		boolean fileExist = false;
+		int counter = 0;
+		File chartImageFile = new File(chartImageName);
+		while (!fileExist) {
+			Thread.sleep(1000);
+			fileExist = chartImageFile.exists();
+			if (counter > 5) {
+				if (!fileExist) {
+					System.out.println("PCR Report:: Could not generate chart image:" + chartImageName + " in provided time:" + 5);
+				}
+				fileExist = true;
+				break;
+			}
+			counter++;
+		}
+		return chartImageName;
 	}
 
 	public List<List<Cell>> columnConfiguration() {

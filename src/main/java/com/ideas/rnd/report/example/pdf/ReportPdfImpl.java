@@ -4,6 +4,8 @@ import com.ideas.rnd.report.algo.PdfReportGenerator;
 import com.ideas.rnd.report.model.pdf.*;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
+import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.io.File;
@@ -31,6 +33,21 @@ public class ReportPdfImpl implements ReportPdf {
 			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
 					footerConfiguration(), table, getGraphs());
 			pdfReportGenerator.generate();
+			// Define the length of the encryption key.
+			// Possible values are 40 or 128 (256 will be available in PDFBox 2.0).
+			int keyLength = 128;
+
+			AccessPermission ap = new AccessPermission();
+
+			// Disable printing, everything else is allowed
+			ap.setCanPrint(false);
+
+			// Owner password (to open the file with all permissions) is "12345"
+			// User password (to open the file but with restricted permissions, is empty here)
+			StandardProtectionPolicy spp = new StandardProtectionPolicy("12345", "12345", ap);
+			spp.setEncryptionKeyLength(keyLength);
+			spp.setPermissions(ap);
+			doc1.protect(spp);
 			doc1.save(fileName);
 			//temp.deleteOnExit();
 		}
@@ -86,17 +103,11 @@ public class ReportPdfImpl implements ReportPdf {
 		Map<String, Object> headerMap = new LinkedHashMap<>();
 		headerMap.put("Printed By:", "ideas_adm");
 		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
-		headerMap.put("Start Date:", "Sun 29-Jun-2014");
-		headerMap.put("End Date:", "Tue 29-Jun-2014");
-		headerMap.put("Printed By1:", "ideas_adm");
-		headerMap.put("Print Date1: ", "Fri 02-Nov-2018 15:00");
-		headerMap.put("Start Date1:", "Sun 29-Jun-2014");
-		headerMap.put("End Date1:", "Tue 29-Jun-2014");
-		headerMap.put("Printed By2:", "ideas_adm");
-		headerMap.put("Print Date2: ", "Fri 02-Nov-2018 15:00");
-		headerMap.put("Start Date2:", "Sun 29-Jun-2014");
-		headerMap.put("End Date2:", "Tue 29-Jun-2014");
-		headerMap.put("Legend:", "(*) Indicates an active Hotel Forecast Override on this date");
+		headerMap.put("Analysis Period :", "01-Jun-2014 to 30-Jun-2014");
+		headerMap.put("Comparison Period :", "01-Jun-2013 to 30-Jun-2013");
+		//headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this");
+		headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date");
+
 		return headerMap;
 	}
 
@@ -201,6 +212,7 @@ public class ReportPdfImpl implements ReportPdf {
 		URL resource10 = ReportPdfImpl.class.getClassLoader().getResource("images/graph10.PNG");
 		URL resource11 = ReportPdfImpl.class.getClassLoader().getResource("images/graph11.png");
 		URL resource12 = ReportPdfImpl.class.getClassLoader().getResource("images/graph12.png");
+		URL resource13 = ReportPdfImpl.class.getClassLoader().getResource("images/PcrChartImageFogX7eRH4c155195530067.png");
 		List<File> graphs = new ArrayList<>();
 		graphs.add(new File(resource1.getPath()));
 		graphs.add(new File(resource2.getPath()));
@@ -214,6 +226,7 @@ public class ReportPdfImpl implements ReportPdf {
 		graphs.add(new File(resource10.getPath()));
 		graphs.add(new File(resource11.getPath()));
 		graphs.add(new File(resource12.getPath()));
+		graphs.add(new File("C:\\Users\\idnyob\\Desktop\\PcrChartImageFogX7eRH4c155195530067.png"));
 		return new Graph(graphs);
 	}
 }
