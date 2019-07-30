@@ -97,7 +97,8 @@ public class PdfReportGeneratorNew implements ReportGenerator {
 	 * @return calculated height required for header section.
 	 */
 	private float getHeaderHeight(Table table) throws IOException {
-		return (float) (evaluateHeaderHeight() + 1.5) * table.getRowHeight();
+		this.wrapLineAdjustment = evaluateHeaderHeight();
+		return (float) (this.wrapLineAdjustment + 1.5) * table.getRowHeight();
 	}
 
 	private int evaluateHeaderHeight() throws IOException {
