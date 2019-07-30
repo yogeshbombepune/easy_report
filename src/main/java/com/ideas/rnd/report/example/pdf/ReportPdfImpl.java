@@ -1,6 +1,6 @@
 package com.ideas.rnd.report.example.pdf;
 
-import com.ideas.rnd.report.algo.PdfReportGenerator;
+import com.ideas.rnd.report.algo.PdfReportGeneratorNew;
 import com.ideas.rnd.report.model.pdf.*;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -23,6 +23,10 @@ public class ReportPdfImpl implements ReportPdf {
 
 		Table table = getTable(columnConfiguration, populateData);
 
+		List<Table> tables = new ArrayList<>();
+		tables.add(table);
+		tables.add(table);
+
 		PDDocument doc2 = new PDDocument();
 		File temp = File.createTempFile("temp-file-name", ".report");
 		doc2.save(temp.getAbsoluteFile());
@@ -30,8 +34,10 @@ public class ReportPdfImpl implements ReportPdf {
 		System.out.println(temp.getAbsoluteFile());
 		try (PDDocument doc1 = PDDocument.load(temp, MemoryUsageSetting.setupTempFileOnly(10240000))) {
 			PDFont pdFont = ReportPdf.loadFont(doc1);
-			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
-					footerConfiguration(), table, getGraphs());
+			/*PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
+					footerConfiguration(), table, getGraphs());*/
+			PdfReportGeneratorNew pdfReportGenerator = new PdfReportGeneratorNew(doc1, pdFont, headerConfiguration(),
+					footerConfiguration(), tables, getGraphs());
 			pdfReportGenerator.generate();
 			// Define the length of the encryption key.
 			// Possible values are 40 or 128 (256 will be available in PDFBox 2.0).
@@ -49,7 +55,7 @@ public class ReportPdfImpl implements ReportPdf {
 			spp.setPermissions(ap);
 			doc1.protect(spp);
 			doc1.save(fileName);
-			//temp.deleteOnExit();
+			temp.deleteOnExit();
 		}
 
 	}
