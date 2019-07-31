@@ -71,10 +71,8 @@ public class PdfReportGeneratorNew implements ReportGenerator {
 			List<List<Range>> rangesOfColumnRangePerPage = null;
 			// Calculate pagination
 			Integer rowsPerPage = getRowsPerPage(table);
-			if (null != table.getColumns() &&
-					table.getColumns().size() > 0 &&
-					null != table.getContent() &&
-					table.getContent().size() > 0) {
+			boolean isColumnAndDataExist = isColumnAndDataExist(table, null != table.getContent(), table.getContent().size());
+			if (isColumnAndDataExist) {
 				rangesOfColumnRangePerPage = getRanges(table);
 				numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
 			} else {
@@ -85,6 +83,13 @@ public class PdfReportGeneratorNew implements ReportGenerator {
 		if (this.graph != null && this.graph.getGraphs() != null && this.graph.getGraphs().size() > 0) {
 			this.totalNumberOfPages += this.graph.getGraphs().size();
 		}
+	}
+
+	private boolean isColumnAndDataExist(Table table, boolean isNotNull, int size) {
+		return null != table.getColumns()
+				&& table.getColumns().size() > 0
+				&& isNotNull
+				&& size > 0;
 	}
 
 	private void addGraph(Table table) throws IOException {
@@ -317,7 +322,8 @@ public class PdfReportGeneratorNew implements ReportGenerator {
 	private void drawRightSection(Table table, int numberOfPages, int pageNumber, PDPageContentStream footerContentStream) throws IOException {
 		float x = table.isLandscape() ? table.getPageSize().getHeight() - table.getMargin() - 40 : table.getPageSize().getUpperRightX() - table.getMargin() - 40;
 		writeText(footerContentStream,
-				this.footer.getPageNumberPhraseColor(), this.footer.getPageNumberPhraseFont(),
+				this.footer.getPageNumberPhraseColor(),
+				this.footer.getPageNumberPhraseFont(),
 				this.footer.getPageNumberPhraseSize(),
 				table.getPageSize().getLowerLeftY() + 25,
 				x,
@@ -336,10 +342,7 @@ public class PdfReportGeneratorNew implements ReportGenerator {
 		List<List<Range>> rangesOfColumnRangePerPage = null;
 		// Calculate pagination
 		Integer rowsPerPage = getRowsPerPage(table);
-		if (null != table.getColumns() &&
-				table.getColumns().size() > 0 &&
-				null != table.getContent() &&
-				table.getContent().size() > 0) {
+		if (isColumnAndDataExist(table, null != table.getContent(), table.getContent().size())) {
 			rangesOfColumnRangePerPage = getRanges(table);
 			numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
 		} else {
@@ -362,10 +365,7 @@ public class PdfReportGeneratorNew implements ReportGenerator {
 	private void renderPages(Table table, int numberOfPages, List<List<Range>> rangesOfColumnRangePerPage, Integer rowsPerPage) throws IOException {
 		// Generate each page, get the content and draw it
 		for (int pageCount = 0; pageCount < numberOfPages; pageCount++) {
-			if (null != table.getColumns() &&
-					table.getColumns().size() > 0 &&
-					null != rangesOfColumnRangePerPage &&
-					rangesOfColumnRangePerPage.size() > 0) {
+			if (isColumnAndDataExist(table, null != rangesOfColumnRangePerPage, rangesOfColumnRangePerPage.size())) {
 				renderTable(table, rangesOfColumnRangePerPage, rowsPerPage, pageCount);
 			} else {
 				generateBlankPageWithOnlyHeaderAndFooter(table);
