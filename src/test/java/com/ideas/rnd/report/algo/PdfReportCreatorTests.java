@@ -21,9 +21,9 @@ import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PdfReportGeneratorTests {
+public class PdfReportCreatorTests {
 
-	private PdfReportGenerator pdfReportGenerator;
+	private PdfReportCreator pdfReportGenerator;
 	private PDFont pdFont;
 
 	@Before
@@ -34,12 +34,15 @@ public class PdfReportGeneratorTests {
 		List<List<String>> populateData = populateData();
 
 		Table table = getTable(columnConfiguration, populateData);
+		List<Table> tables = new ArrayList<>();
+		tables.add(table);
+		tables.add(table);
 
 		try {
 			PDDocument doc = new PDDocument();
 			this.pdFont = ReportPdf.loadFont(doc);
-			this.pdfReportGenerator = new PdfReportGenerator(doc, pdFont, headerConfiguration(),
-					footerConfiguration(), table, getGraphs());
+			this.pdfReportGenerator = new PdfReportCreator(doc, pdFont, headerConfiguration(),
+					footerConfiguration(), tables, getGraphs());
 			this.pdfReportGenerator.generate();
 		} catch (Exception e) {
 			e.printStackTrace();

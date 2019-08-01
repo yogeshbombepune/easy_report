@@ -1,6 +1,6 @@
 package com.ideas.rnd.report.example.pdf;
 
-import com.ideas.rnd.report.algo.PdfReportGeneratorNew;
+import com.ideas.rnd.report.algo.PdfReportCreator;
 import com.ideas.rnd.report.model.pdf.*;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -34,9 +34,7 @@ public class ReportPdfImpl implements ReportPdf {
 		System.out.println(temp.getAbsoluteFile());
 		try (PDDocument doc1 = PDDocument.load(temp, MemoryUsageSetting.setupTempFileOnly(10240000))) {
 			PDFont pdFont = ReportPdf.loadFont(doc1);
-			/*PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
-					footerConfiguration(), table, getGraphs());*/
-			PdfReportGeneratorNew pdfReportGenerator = new PdfReportGeneratorNew(doc1, pdFont, headerConfiguration(),
+			PdfReportCreator pdfReportGenerator = new PdfReportCreator(doc1, pdFont, headerConfiguration(),
 					footerConfiguration(), tables, getGraphs());
 			pdfReportGenerator.generate();
 			// Define the length of the encryption key.
@@ -111,9 +109,7 @@ public class ReportPdfImpl implements ReportPdf {
 		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
 		headerMap.put("Analysis Period :", "01-Jun-2014 to 30-Jun-2014");
 		headerMap.put("Comparison Period :", "01-Jun-2013 to 30-Jun-2013");
-		//headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this");
-		headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date");
-
+		headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel");
 		return headerMap;
 	}
 
@@ -197,7 +193,7 @@ public class ReportPdfImpl implements ReportPdf {
 	public List<List<String>> populateData() {
 		String[] arr = {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"};
 		List<List<String>> rows = new ArrayList<>();
-		for (int row = 0; row < 100; row++) {
+		for (int row = 0; row < 1000; row++) {
 			List<String> modifiableList = new ArrayList(Arrays.asList(arr));
 			rows.add(modifiableList);
 		}

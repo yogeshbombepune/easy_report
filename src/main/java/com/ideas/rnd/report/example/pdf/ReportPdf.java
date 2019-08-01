@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface ReportPdf {
 
-	File font_file = new File("C:\\Users\\idnyob\\IdeaProjects\\rnd\\src\\main\\resources\\fonts\\ARIALUNI.TTF");
+	File font_file = new File("C:\\Users\\idnyob\\IdeaProjects\\rnd\\src\\main\\resources\\fonts\\tahoma.ttf");
 
 	/**
 	 * Page Configuration
