@@ -82,6 +82,40 @@ public class PdfReportCreator implements ReportGenerator {
 
 	}
 
+	public PdfReportCreator(PDDocument doc, Header header, Footer footer,
+							List<Table> tables, Graph graph) throws Exception {
+		this.doc = doc;
+		this.header = header;
+		this.footer = footer;
+		this.graph = graph;
+		this.isGraphDataExist = this.graph != null &&
+				this.graph.getGraphs() != null &&
+				this.graph.getGraphs().size() > 0;
+		this.tables = tables;
+
+		boolean isTableDataExist = null != this.tables && this.tables.size() > 0;
+		if (isTableDataExist) {
+			this.isLandScape = tables.get(0).isLandscape();
+			this.pageSize = tables.get(0).getPageSize();
+			this.pageHeight = this.pageSize.getHeight();
+			this.pageWidth = this.pageSize.getWidth();
+			this.pageMargin = tables.get(0).getMargin();
+			this.rowHeight = tables.get(0).getRowHeight();
+		} else {
+			throw new Exception("Table null or Empty..");
+		}
+
+		float twoSideMargin = this.pageMargin * 2;
+		this.tableWidth = this.isLandScape ?
+				this.pageHeight - twoSideMargin :
+				this.pageWidth - twoSideMargin;
+		this.tableHeight = this.isLandScape ?
+				this.pageWidth - this.pageMargin - getHeaderHeight(this.rowHeight) :
+				this.pageHeight - this.pageMargin - getHeaderHeight(this.rowHeight);
+
+
+	}
+
 
 	/**
 	 * Generates document from initialize data objects.
@@ -104,7 +138,7 @@ public class PdfReportCreator implements ReportGenerator {
 			List<List<Range>> rangesOfColumnRangePerPage = null;
 			// Calculate pagination
 			Integer rowsPerPage = getRowsPerPage(table);
-			boolean isColumnAndDataExist = isColumnAndDataExist(table, null != table.getContent(), table.getContent().size());
+			boolean isColumnAndDataExist = isColumnAndDataExist(table);
 			if (isColumnAndDataExist) {
 				rangesOfColumnRangePerPage = getRanges(table);
 				numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
@@ -118,11 +152,12 @@ public class PdfReportCreator implements ReportGenerator {
 		}
 	}
 
-	private boolean isColumnAndDataExist(Table table, boolean isNotNull, int size) {
-		return null != table.getColumns()
-				&& table.getColumns().size() > 0
-				&& isNotNull
-				&& size > 0;
+	private boolean isColumnAndDataExist(Table table) {
+		return null != table &&
+				null != table.getColumns() &&
+				table.getColumns().size() > 0 &&
+				null != table.getContent() &&
+				table.getContent().size() > 0;
 	}
 
 
@@ -363,7 +398,7 @@ public class PdfReportCreator implements ReportGenerator {
 		List<List<Range>> rangesOfColumnRangePerPage = null;
 		// Calculate pagination
 		Integer rowsPerPage = getRowsPerPage(table);
-		if (isColumnAndDataExist(table, null != table.getContent(), table.getContent().size())) {
+		if (isColumnAndDataExist(table)) {
 			rangesOfColumnRangePerPage = getRanges(table);
 			numberOfPages = new Double(Math.ceil(table.getNumberOfRows().floatValue() / rowsPerPage)).intValue();
 		} else {
@@ -386,7 +421,8 @@ public class PdfReportCreator implements ReportGenerator {
 	private void renderPages(Table table, int numberOfPages, List<List<Range>> rangesOfColumnRangePerPage, Integer rowsPerPage) throws IOException {
 		// Generate each page, get the content and draw it
 		for (int pageCount = 0; pageCount < numberOfPages; pageCount++) {
-			if (isColumnAndDataExist(table, null != rangesOfColumnRangePerPage, rangesOfColumnRangePerPage.size())) {
+			if (null != table.getColumns() && table.getColumns().size() > 0
+					&& null != rangesOfColumnRangePerPage && rangesOfColumnRangePerPage.size() > 0) {
 				renderTable(table, rangesOfColumnRangePerPage, rowsPerPage, pageCount);
 			} else {
 				generateBlankPageWithOnlyHeaderAndFooter(table);
