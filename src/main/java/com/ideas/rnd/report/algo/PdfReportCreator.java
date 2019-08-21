@@ -702,11 +702,12 @@ public class PdfReportCreator implements ReportGenerator {
 				}
 			} else {
 				adjustX = getAdjustX(table.getColumns().get(from).getHeaderAlignment(), table.getColumns().get(from).getWidth(), table.getCellPadding(), textWidth);
-				writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY, nextTextX + adjustX, text != null ? text : "");
+				writeText(contentStream, table.getHeaderTextColor(), table.getHeaderTextFont(), table.getHeaderFontSize(), nextTextY, nextTextX + adjustX, text != null ? text.replace(null != table.getSplitRegex() ? table.getSplitRegex() : "", "") : "");
 			}
 			nextTextX += table.getColumns().get(from++).getWidth();
 		}
 	}
+
 
 
 	/**
@@ -946,6 +947,7 @@ public class PdfReportCreator implements ReportGenerator {
 	 * @throws IOException
 	 */
 	private int getTextWidth(PDFont textFont, String text, float fontSize) throws IOException {
+		text = text.replaceAll("[^\\x00-\\x7F]", "");
 		return (null != this.font) ?
 				(int) ((this.font.getStringWidth(text) / 1000) * fontSize) :
 				(int) (multiply(textFont.getStringWidth(text) / 1000, fontSize));

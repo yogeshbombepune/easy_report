@@ -88,11 +88,11 @@ public class ReportPdfImpl implements ReportPdf {
 	@Override
 	public Header headerConfiguration() {
 		return Header.builder()
-				.propertyName("Moevenpick Amsterdam")
+				.propertyName("Moevenpick Hotel 's-Hertogenbosch\u200E ")
 				.propertyNameColor(PAGE_HEADER_PROPERTY_NAME_COLOR)
 				.propertyNameFont(PAGE_HEADER_PROPERTY_NAME_FONT)
 				.propertyNameFontSize(PAGE_HEADER_PROPERTY_NAME_SIZE)
-				.reportName("Last Room Value report")
+				.reportName("Ramada Plaza Tai'an Hotel\n")
 				.reportNameColor(PAGE_HEADER_REPORT_NAME_COLOR)
 				.reportNameFont(PAGE_HEADER_REPORT_NAME_FONT)
 				.reportNameFontSize(PAGE_HEADER_REPORT_NAME_FONT_SIZE)
