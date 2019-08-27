@@ -1,6 +1,6 @@
 package com.ideas.rnd.report.example.pdf;
 
-import com.ideas.rnd.report.algo.PdfReportGenerator;
+import com.ideas.rnd.report.algo.PdfReportCreator;
 import com.ideas.rnd.report.model.pdf.*;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -23,6 +23,10 @@ public class ReportPdfImpl implements ReportPdf {
 
 		Table table = getTable(columnConfiguration, populateData);
 
+		List<Table> tables = new ArrayList<>();
+		tables.add(table);
+		tables.add(table);
+
 		PDDocument doc2 = new PDDocument();
 		File temp = File.createTempFile("temp-file-name", ".report");
 		doc2.save(temp.getAbsoluteFile());
@@ -30,8 +34,8 @@ public class ReportPdfImpl implements ReportPdf {
 		System.out.println(temp.getAbsoluteFile());
 		try (PDDocument doc1 = PDDocument.load(temp, MemoryUsageSetting.setupTempFileOnly(10240000))) {
 			PDFont pdFont = ReportPdf.loadFont(doc1);
-			PdfReportGenerator pdfReportGenerator = new PdfReportGenerator(doc1, pdFont, headerConfiguration(),
-					footerConfiguration(), table, getGraphs());
+			PdfReportCreator pdfReportGenerator = new PdfReportCreator(doc1, pdFont, headerConfiguration(),
+					footerConfiguration(), tables, getGraphs());
 			pdfReportGenerator.generate();
 			// Define the length of the encryption key.
 			// Possible values are 40 or 128 (256 will be available in PDFBox 2.0).
@@ -49,7 +53,7 @@ public class ReportPdfImpl implements ReportPdf {
 			spp.setPermissions(ap);
 			doc1.protect(spp);
 			doc1.save(fileName);
-			//temp.deleteOnExit();
+			temp.deleteOnExit();
 		}
 
 	}
@@ -84,11 +88,11 @@ public class ReportPdfImpl implements ReportPdf {
 	@Override
 	public Header headerConfiguration() {
 		return Header.builder()
-				.propertyName("Moevenpick Amsterdam")
-				.propertyNameColor(PAGE_HEADER_PROPERTY_NAME_COLOR)
-				.propertyNameFont(PAGE_HEADER_PROPERTY_NAME_FONT)
-				.propertyNameFontSize(PAGE_HEADER_PROPERTY_NAME_SIZE)
-				.reportName("Last Room Value report")
+				.clientName("Client's name")
+				.clientNameColor(PAGE_HEADER_PROPERTY_NAME_COLOR)
+				.clientNameFont(PAGE_HEADER_PROPERTY_NAME_FONT)
+				.clientNameFontSize(PAGE_HEADER_PROPERTY_NAME_SIZE)
+				.reportName("Report's name")
 				.reportNameColor(PAGE_HEADER_REPORT_NAME_COLOR)
 				.reportNameFont(PAGE_HEADER_REPORT_NAME_FONT)
 				.reportNameFontSize(PAGE_HEADER_REPORT_NAME_FONT_SIZE)
@@ -105,9 +109,7 @@ public class ReportPdfImpl implements ReportPdf {
 		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
 		headerMap.put("Analysis Period :", "01-Jun-2014 to 30-Jun-2014");
 		headerMap.put("Comparison Period :", "01-Jun-2013 to 30-Jun-2013");
-		//headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this");
-		headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date");
-
+		headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel");
 		return headerMap;
 	}
 
@@ -191,7 +193,7 @@ public class ReportPdfImpl implements ReportPdf {
 	public List<List<String>> populateData() {
 		String[] arr = {"FirstName", "LastName", "fakemail@mock.com", "12345", "yes", "XH4234FSD", "4334", "yFone 5 XS", "31/05/2013 07:15 am", "WEB"};
 		List<List<String>> rows = new ArrayList<>();
-		for (int row = 0; row < 100; row++) {
+		for (int row = 0; row < 1000; row++) {
 			List<String> modifiableList = new ArrayList(Arrays.asList(arr));
 			rows.add(modifiableList);
 		}
@@ -212,7 +214,6 @@ public class ReportPdfImpl implements ReportPdf {
 		URL resource10 = ReportPdfImpl.class.getClassLoader().getResource("images/graph10.PNG");
 		URL resource11 = ReportPdfImpl.class.getClassLoader().getResource("images/graph11.png");
 		URL resource12 = ReportPdfImpl.class.getClassLoader().getResource("images/graph12.png");
-		URL resource13 = ReportPdfImpl.class.getClassLoader().getResource("images/PcrChartImageFogX7eRH4c155195530067.png");
 		List<File> graphs = new ArrayList<>();
 		graphs.add(new File(resource1.getPath()));
 		graphs.add(new File(resource2.getPath()));
@@ -226,7 +227,6 @@ public class ReportPdfImpl implements ReportPdf {
 		graphs.add(new File(resource10.getPath()));
 		graphs.add(new File(resource11.getPath()));
 		graphs.add(new File(resource12.getPath()));
-		graphs.add(new File("C:\\Users\\idnyob\\Desktop\\PcrChartImageFogX7eRH4c155195530067.png"));
 		return new Graph(graphs);
 	}
 }
