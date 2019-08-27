@@ -50,7 +50,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 Please make sure to update tests as appropriate.
 
 ## Future Features
-###### People can welcome and contribute in following features.
+###### People can contribute in following features.
 1. Cell level control on pdf table.
 2. Automatic string wrapping and resizing of pdf pages.
 3. Excel Data Driven Rendering.
