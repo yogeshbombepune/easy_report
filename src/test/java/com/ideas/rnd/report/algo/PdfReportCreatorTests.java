@@ -187,8 +187,7 @@ public class PdfReportCreatorTests {
 		headerMap.put("Print Date: ", "Fri 02-Nov-2018 15:00");
 		headerMap.put("Analysis Period :", "01-Jun-2014 to 30-Jun-2014");
 		headerMap.put("Comparison Period :", "01-Jun-2013 to 30-Jun-2013");
-		headerMap.put("Legend:", "CRU\tAND \nCRU 'AND \\u CRU, +an, active^, Hotel, Forecast,<>& Override, on, this");
-		//headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date");
+		headerMap.put("Legend:", "Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date,Indicates, an, active, Hotel, Forecast, Override, on, this, date, Indicates, an, active, Hotel, Forecast, Override, on, this, date");
 		return headerMap;
 	}
 
@@ -303,7 +302,7 @@ public class PdfReportCreatorTests {
 		graphs.add(new File(resource10.getPath()));
 		graphs.add(new File(resource11.getPath()));
 		graphs.add(new File(resource12.getPath()));
-		graphs.add(new File("C:\\Users\\idnyob\\Desktop\\PcrChartImageFogX7eRH4c155195530067.png"));
+		graphs.add(new File(resource13.getPath()));
 		return new Graph(graphs);
 	}
 }
