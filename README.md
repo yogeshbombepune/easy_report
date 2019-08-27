@@ -1,6 +1,6 @@
 # Report Automation
 
-Report Automation is a Java library for dealing with generate date deriven report .
+Report Automation is a Java library for dealing with generate data driven report .
 
 ## Installation
 
@@ -27,7 +27,7 @@ Need Apache PdfBox and FontBox Library.
 ## Usage
 
 ```
-Just Run the Driver class main method
+Run the Driver class main method
 ```
 
 ## Features
@@ -40,15 +40,23 @@ Just Run the Driver class main method
 7. Render multiple table in single pdf file.
 8. Table header multi line support.
 9. Rendering CSV file.
-10.Rendering Excel file.
-11.Rendering Xml File.
-12.Rendering Json File.
+10. Rendering Excel file.
+11. Rendering Xml File.
+12. Rendering Json File.
 
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
 Please make sure to update tests as appropriate.
+
+## Future Features
+###### People can welcome and contribute in following features.
+1. Cell level control on pdf table.
+2. Automatic string wrapping and resizing of pdf pages.
+3. Excel Data Driven Rendering.
 
 ## License
 Apache PdfBox
+
+## Contributor
+Yogesh Bombe (yogi.bombe@gmail.com)
