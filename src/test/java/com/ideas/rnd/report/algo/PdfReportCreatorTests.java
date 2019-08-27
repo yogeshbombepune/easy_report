@@ -166,10 +166,10 @@ public class PdfReportCreatorTests {
 
 	private Header headerConfiguration() {
 		return Header.builder()
-				.propertyName("Moevenpick Amsterdam")
-				.propertyNameColor(ReportPdf.PAGE_HEADER_PROPERTY_NAME_COLOR)
-				.propertyNameFont(ReportPdf.PAGE_HEADER_PROPERTY_NAME_FONT)
-				.propertyNameFontSize(ReportPdf.PAGE_HEADER_PROPERTY_NAME_SIZE)
+				.clientName("Moevenpick Amsterdam")
+				.clientNameColor(ReportPdf.PAGE_HEADER_PROPERTY_NAME_COLOR)
+				.clientNameFont(ReportPdf.PAGE_HEADER_PROPERTY_NAME_FONT)
+				.clientNameFontSize(ReportPdf.PAGE_HEADER_PROPERTY_NAME_SIZE)
 				.reportName("Last Room Value report")
 				.reportNameColor(ReportPdf.PAGE_HEADER_REPORT_NAME_COLOR)
 				.reportNameFont(ReportPdf.PAGE_HEADER_REPORT_NAME_FONT)

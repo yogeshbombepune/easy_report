@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface ReportPdf {
 
-	File font_file = new File("C:\\Users\\idnyob\\IdeaProjects\\rnd\\src\\main\\resources\\fonts\\tahoma.ttf");
+	File font_file = new File(ReportPdf.class.getClassLoader().getResource("fonts/Ming_Imperial.ttf").getPath());
 
 	/**
 	 * Page Configuration

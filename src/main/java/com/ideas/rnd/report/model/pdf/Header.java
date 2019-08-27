@@ -14,10 +14,10 @@ public class Header {
     private PDFont metaKeyValFont;
     private float metaKeyValFontSize;
     private Color metaKeyValColor;
-    private String propertyName;
-    private PDFont propertyNameFont;
-    private float propertyNameFontSize;
-    private Color propertyNameColor;
+    private String clientName;
+    private PDFont clientNameFont;
+    private float clientNameFontSize;
+    private Color clientNameColor;
     private String reportName;
     private PDFont reportNameFont;
     private float reportNameFontSize;

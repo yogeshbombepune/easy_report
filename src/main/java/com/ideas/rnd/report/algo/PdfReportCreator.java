@@ -341,9 +341,9 @@ public class PdfReportCreator implements ReportGenerator {
 	 */
 	private void writeHeadingOne(PDPageContentStream contentStream, float nextY) throws IOException {
 		float width = this.isLandScape ? this.pageHeight : this.pageWidth;
-		int textWidth = getTextWidth(header.getPropertyNameFont(), header.getPropertyName(), header.getPropertyNameFontSize());
+		int textWidth = getTextWidth(header.getClientNameFont(), header.getClientName(), header.getClientNameFontSize());
 		float adjustX = getAdjustX(Alignment.CENTER, width, 0, textWidth);
-		writeText(contentStream, header.getPropertyNameColor(), header.getPropertyNameFont(), header.getPropertyNameFontSize(), nextY, adjustX, header.getPropertyName());
+		writeText(contentStream, header.getClientNameColor(), header.getClientNameFont(), header.getClientNameFontSize(), nextY, adjustX, header.getClientName());
 	}
 
 	private void printFooter(PDPageContentStream footerContentStream) throws IOException {

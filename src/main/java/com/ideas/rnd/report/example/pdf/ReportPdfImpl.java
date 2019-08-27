@@ -88,11 +88,11 @@ public class ReportPdfImpl implements ReportPdf {
 	@Override
 	public Header headerConfiguration() {
 		return Header.builder()
-				.propertyName("Moevenpick Hotel 's-Hertogenbosch\u200E ")
-				.propertyNameColor(PAGE_HEADER_PROPERTY_NAME_COLOR)
-				.propertyNameFont(PAGE_HEADER_PROPERTY_NAME_FONT)
-				.propertyNameFontSize(PAGE_HEADER_PROPERTY_NAME_SIZE)
-				.reportName("Ramada Plaza Tai'an Hotel\n")
+				.clientName("Client's name")
+				.clientNameColor(PAGE_HEADER_PROPERTY_NAME_COLOR)
+				.clientNameFont(PAGE_HEADER_PROPERTY_NAME_FONT)
+				.clientNameFontSize(PAGE_HEADER_PROPERTY_NAME_SIZE)
+				.reportName("Report's name")
 				.reportNameColor(PAGE_HEADER_REPORT_NAME_COLOR)
 				.reportNameFont(PAGE_HEADER_REPORT_NAME_FONT)
 				.reportNameFontSize(PAGE_HEADER_REPORT_NAME_FONT_SIZE)
@@ -214,7 +214,6 @@ public class ReportPdfImpl implements ReportPdf {
 		URL resource10 = ReportPdfImpl.class.getClassLoader().getResource("images/graph10.PNG");
 		URL resource11 = ReportPdfImpl.class.getClassLoader().getResource("images/graph11.png");
 		URL resource12 = ReportPdfImpl.class.getClassLoader().getResource("images/graph12.png");
-		URL resource13 = ReportPdfImpl.class.getClassLoader().getResource("images/PcrChartImageFogX7eRH4c155195530067.png");
 		List<File> graphs = new ArrayList<>();
 		graphs.add(new File(resource1.getPath()));
 		graphs.add(new File(resource2.getPath()));
@@ -228,7 +227,6 @@ public class ReportPdfImpl implements ReportPdf {
 		graphs.add(new File(resource10.getPath()));
 		graphs.add(new File(resource11.getPath()));
 		graphs.add(new File(resource12.getPath()));
-		graphs.add(new File("C:\\Users\\idnyob\\Desktop\\PcrChartImageFogX7eRH4c155195530067.png"));
 		return new Graph(graphs);
 	}
 }
