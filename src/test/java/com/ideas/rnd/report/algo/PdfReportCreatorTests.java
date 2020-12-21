@@ -1,8 +1,5 @@
 package com.ideas.rnd.report.algo;
 
-import com.ideas.rnd.report.example.pdf.ReportPdf;
-import com.ideas.rnd.report.example.pdf.ReportPdfImpl;
-import com.ideas.rnd.report.model.pdf.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.junit.Assert;
@@ -11,6 +8,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.cluster.report.report.algo.PdfReportCreator;
+import com.cluster.report.report.example.pdf.ReportPdf;
+import com.cluster.report.report.example.pdf.ReportPdfImpl;
+import com.cluster.report.report.model.pdf.*;
 
 import java.io.File;
 import java.lang.reflect.Field;
