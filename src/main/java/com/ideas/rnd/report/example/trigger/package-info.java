@@ -1,1 +1,0 @@
-package com.ideas.rnd.report.example.trigger;

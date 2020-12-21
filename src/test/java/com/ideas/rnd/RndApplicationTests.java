@@ -1,7 +1,8 @@
 package com.ideas.rnd;
 
+import com.cluster.report.report.model.pdf.Column;
 import com.google.gson.Gson;
-import com.ideas.rnd.report.model.pdf.Column;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
